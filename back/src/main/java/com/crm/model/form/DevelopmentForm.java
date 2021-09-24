@@ -1,44 +1,15 @@
-package com.crm.model;
+package com.crm.model.form;
 
-import javax.persistence.*;
+import com.crm.model.Development;
 
-// Step 3
-@Entity
-@Table(name = "development")
-public class Development {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column
-    private int id;
-
-    @Column
+public class DevelopmentForm {
     private Integer licenseAmount;
-
-    @Column
     private Integer packAmount;
-
-    @Column
     private String principalArea;
-
-    @Column
     private String packs;
-
-    @Column
     private String notes;
 
-    @ManyToOne
-    private User owner;
-
-    public Development() { }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    public DevelopmentForm() { }
 
     public Integer getLicenseAmount() {
         return licenseAmount;
@@ -80,11 +51,11 @@ public class Development {
         this.notes = notes;
     }
 
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void patch(Development development) {
+        development.setLicenseAmount(licenseAmount);
+        development.setPackAmount(packAmount);
+        development.setPrincipalArea(principalArea);
+        development.setPacks(packs);
+        development.setNotes(notes);
     }
 }

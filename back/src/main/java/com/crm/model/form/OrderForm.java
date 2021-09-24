@@ -1,56 +1,19 @@
-package com.crm.model;
+package com.crm.model.form;
 
-import javax.persistence.*;
+import com.crm.model.Order;
 
-// Step 6
-@Entity
-@Table(name = "orders")
-public class Order {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column
-    private int id;
-
-    @Column
+public class OrderForm {
     private Float price;
-
-    @Column
     private Integer cuit;
-
-    @Column
     private String socialReason;
-
-    @Column
     private String address;
-
-    @Column
     private String paymentMethod;
-
-    @Column
     private String paymentTerms;
-
-    @Column
     private Integer licenseAmount;
-
-    @Column
     private String licenseDescription;
-
-    @Column
     private String licenceCode;
 
-    @ManyToOne
-    private User owner;
-
-    public Order() { }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    public OrderForm() { }
 
     public Float getPrice() {
         return price;
@@ -124,12 +87,15 @@ public class Order {
         this.licenceCode = licenceCode;
     }
 
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void patch(Order order) {
+        order.setPrice(price);
+        order.setCuit(cuit);
+        order.setSocialReason(socialReason);
+        order.setAddress(address);
+        order.setPaymentMethod(paymentMethod);
+        order.setPaymentTerms(paymentTerms);
+        order.setLicenseAmount(licenseAmount);
+        order.setLicenseDescription(licenseDescription);
+        order.setLicenceCode(licenceCode);
     }
 }
-

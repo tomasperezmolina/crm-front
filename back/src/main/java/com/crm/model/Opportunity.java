@@ -1,6 +1,7 @@
 package com.crm.model;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 
 // Step 1
 @Entity
@@ -16,27 +17,45 @@ public class Opportunity {
     private User currentOwner;
 
     @OneToOne
+    @NotNull
     private Client client;
 
     @OneToOne
+    @NotNull
     private FirstMeeting firstMeeting;
 
     @OneToOne
+    @NotNull
     private Development development;
 
     @OneToOne
+    @NotNull
     private POCDevelopment pocDevelopment;
 
     @OneToOne
+    @NotNull
     private POCInstallation pocInstallation;
 
     @OneToOne
+    @NotNull
     private Order order;
 
     @Column
+    @NotNull
     private Stage stage;
 
     public Opportunity() { }
+
+    public Opportunity(User currentOwner, Client client, Stage stage) {
+        this.currentOwner = currentOwner;
+        this.client = client;
+        this.stage = stage;
+        this.firstMeeting = new FirstMeeting();
+        this.development = new Development();
+        this.pocDevelopment = new POCDevelopment();
+        this.pocInstallation = new POCInstallation();
+        this.order = new Order();
+    }
 
     public int getId() {
         return id;

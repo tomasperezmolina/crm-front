@@ -39,6 +39,17 @@ public class Client {
 
     public Client() { }
 
+    public Client(String name, String webpage, String industry, String companyType, String region, String notes, List<ClientContact> clientContacts, User owner) {
+        this.name = name;
+        this.webpage = webpage;
+        this.industry = industry;
+        this.companyType = companyType;
+        this.region = region;
+        this.notes = notes;
+        this.clientContacts = clientContacts;
+        this.owner = owner;
+    }
+
     public int getId() {
         return id;
     }

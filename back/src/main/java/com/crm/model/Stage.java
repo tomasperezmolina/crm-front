@@ -5,9 +5,10 @@ public enum Stage {
     FIRSTMEETING,
     DEVELOPMENT,
     POCDEVELOPMENT,
-    POCIMPLEMENTATION,
+    POCINSTALLATION,
     NEGOTIATION,
-    ORDER;
+    ORDER,
+    CANCELLED;
 
     public static Stage next(Stage stage) {
         switch (stage) {
@@ -18,8 +19,8 @@ public enum Stage {
             case DEVELOPMENT:
                 return POCDEVELOPMENT;
             case POCDEVELOPMENT:
-                return POCIMPLEMENTATION;
-            case POCIMPLEMENTATION:
+                return POCINSTALLATION;
+            case POCINSTALLATION:
                 return NEGOTIATION;
             case NEGOTIATION:
                 return ORDER;

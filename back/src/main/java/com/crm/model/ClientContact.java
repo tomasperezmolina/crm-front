@@ -29,6 +29,14 @@ public class ClientContact {
 
     public ClientContact() { }
 
+    public ClientContact(String name, String lastName, String email, String phoneNumber, String linkedIn) {
+        this.name = name;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.linkedIn = linkedIn;
+    }
+
     public int getId() {
         return id;
     }
