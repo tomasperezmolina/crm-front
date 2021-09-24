@@ -1,51 +1,21 @@
-package com.crm.model;
+package com.crm.model.form;
 
-import javax.persistence.*;
-import java.util.List;
+import com.crm.model.Client;
 
-// Step 1
-@Entity
-@Table(name = "client")
-public class Client {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column
-    private int id;
-
-    @Column
+public class ClientForm {
     private String name;
 
-    @Column
     private String webpage;
 
-    @Column
     private String industry;
 
-    @Column
     private String companyType;
 
-    @Column
     private String region;
 
-    @Column
     private String notes;
 
-    @OneToMany
-    private List<ClientContact> clientContacts;
-
-    @ManyToOne
-    private User owner;
-
-    public Client() { }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    public ClientForm() { }
 
     public String getName() {
         return name;
@@ -95,19 +65,12 @@ public class Client {
         this.notes = notes;
     }
 
-    public List<ClientContact> getClientContacts() {
-        return clientContacts;
-    }
-
-    public void setClientContacts(List<ClientContact> clientContacts) {
-        this.clientContacts = clientContacts;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
+    public void patch(Client client) {
+        client.setName(name);
+        client.setWebpage(webpage);
+        client.setIndustry(industry);
+        client.setCompanyType(companyType);
+        client.setRegion(region);
+        client.setNotes(notes);
     }
 }

@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
         uniqueConstraints =
         @UniqueConstraint(columnNames = {"email", "active"})
 )
-public class User implements Identifiable {
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
