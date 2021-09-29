@@ -10,8 +10,10 @@ import {
 } from "@mui/material";
 import React from "react";
 import MenuIcon from "@mui/icons-material/Menu";
+import { useRouter } from "next/router";
 
 export default function Navbar() {
+  const router = useRouter();
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
   const open = Boolean(anchor);
   const handleClick: React.MouseEventHandler<HTMLElement> = (event) => {
@@ -20,6 +22,17 @@ export default function Navbar() {
   const handleClose = () => {
     setAnchor(null);
   };
+  const handleLoginClick = () => {
+    router.push('/login');
+  };
+  const handleLogoutClick = () => {
+    handleClose();
+    router.push('/');
+  };
+  const handleOpportunityClick = () => {
+    handleClose();
+    router.push('/opportunity');
+  }
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -44,14 +57,13 @@ export default function Navbar() {
               'aria-labelledby': 'basic-button',
             }}
           >
-            <MenuItem onClick={handleClose}>Profile</MenuItem>
-            <MenuItem onClick={handleClose}>My account</MenuItem>
-            <MenuItem onClick={handleClose}>Logout</MenuItem>
+            <MenuItem onClick={handleOpportunityClick}>Oportunidades</MenuItem>
+            <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
           </Menu>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             News
           </Typography>
-          <Button color="inherit">Login</Button>
+          <Button color="inherit" onClick={handleLoginClick}>Login</Button>
         </Toolbar>
       </AppBar>
     </Box>
