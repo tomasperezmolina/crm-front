@@ -61,7 +61,7 @@ export default function Navbar() {
             <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
           </Menu>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            News
+            /CRM/
           </Typography>
           <Button color="inherit" onClick={handleLoginClick}>Login</Button>
         </Toolbar>

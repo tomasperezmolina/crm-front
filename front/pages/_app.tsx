@@ -46,6 +46,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       </div>
       <style jsx>{`
         header {
+          flex: 0 0 auto;
           width: 100%;
         }
         .container {
@@ -58,8 +59,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         }
 
         main {
-          padding: 1rem 0;
+          padding-top: 1rem;
           flex: 1;
+          min-height: 0;
           width: 100%;
           display: flex;
           flex-direction: column;
@@ -68,6 +70,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         }
 
         footer {
+          flex: 0 0 auto;
           width: 100%;
           height: 100px;
           border-top: 1px solid #eaeaea;
