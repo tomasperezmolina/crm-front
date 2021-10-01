@@ -14,12 +14,12 @@ import { useFormik } from "formik";
 const validationSchema = yup.object({
   email: yup
     .string()
-    .email("Enter a valid email")
-    .required("Email is required"),
+    .email("Por favor ingresá un email válido")
+    .required("Se requiere un email"),
   password: yup
     .string()
-    .min(8, "Password should be of minimum 8 characters length")
-    .required("Password is required"),
+    .min(8, "La contraseña debe ser de 8 caracteres o más")
+    .required("Se requiere una contraseña"),
 });
 
 interface LoginProps {}
