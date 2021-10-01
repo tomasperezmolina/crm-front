@@ -5,7 +5,7 @@ import React from "react";
 import Navbar from "../common/navbar";
 
 import type { AppProps } from "next/app";
-import { Container } from "@mui/material";
+import { Box } from "@mui/material";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -21,9 +21,9 @@ function MyApp({ Component, pageProps }: AppProps) {
         </header>
 
         <main>
-          <Container fixed maxWidth='xl' sx={{height: '100%'}}>
+          <Box sx={{height: '100%', width: '100%'}}>
             <Component {...pageProps} />
-          </Container>
+          </Box>
         </main>
 
         <footer>
@@ -59,7 +59,6 @@ function MyApp({ Component, pageProps }: AppProps) {
         }
 
         main {
-          padding-top: 1rem;
           flex: 1;
           min-height: 0;
           width: 100%;

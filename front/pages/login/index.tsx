@@ -37,48 +37,63 @@ const Login: NextPage<LoginProps> = () => {
   });
 
   return (
-    <Container maxWidth="sm">
-      <Typography variant='h1' align='center' gutterBottom>/CRM/</Typography>
-      <form onSubmit={formik.handleSubmit}>
-        <Grid container direction="column" rowSpacing={2}>
-          <Grid item>
-            <Box style={{ minHeight: "80px" }}>
-              <TextField
-                fullWidth
-                id="email"
-                name="email"
-                label="Email"
-                value={formik.values.email}
-                onChange={formik.handleChange}
-                error={formik.touched.email && Boolean(formik.errors.email)}
-                helperText={formik.touched.email && formik.errors.email}
-              />
-            </Box>
-          </Grid>
-          <Grid item>
-            <Box style={{ minHeight: "80px" }}>
-              <TextField
-                fullWidth
-                id="password"
-                name="password"
-                label="Password"
-                type="password"
-                value={formik.values.password}
-                onChange={formik.handleChange}
-                error={
-                  formik.touched.password && Boolean(formik.errors.password)
-                }
-                helperText={formik.touched.password && formik.errors.password}
-              />
-            </Box>
-          </Grid>
-          <Grid item>
-            <Button fullWidth color="primary" variant="contained" type="submit">
-              Submit
-            </Button>
-          </Grid>
+    <Container maxWidth="sm" sx={{height: 'inherit'}}>
+      <Grid container direction='column' justifyContent='center' sx={{height: 'inherit'}}>
+        <Grid item>
+          <Typography variant="h1" align="center" gutterBottom>
+            /CRM/
+          </Typography>
         </Grid>
-      </form>
+        <Grid item>
+          <form onSubmit={formik.handleSubmit}>
+            <Grid container direction="column" rowSpacing={2}>
+              <Grid item>
+                <Box style={{ minHeight: "80px" }}>
+                  <TextField
+                    fullWidth
+                    id="email"
+                    name="email"
+                    label="Email"
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    error={formik.touched.email && Boolean(formik.errors.email)}
+                    helperText={formik.touched.email && formik.errors.email}
+                  />
+                </Box>
+              </Grid>
+              <Grid item>
+                <Box style={{ minHeight: "80px" }}>
+                  <TextField
+                    fullWidth
+                    id="password"
+                    name="password"
+                    label="Contraseña"
+                    type="password"
+                    value={formik.values.password}
+                    onChange={formik.handleChange}
+                    error={
+                      formik.touched.password && Boolean(formik.errors.password)
+                    }
+                    helperText={
+                      formik.touched.password && formik.errors.password
+                    }
+                  />
+                </Box>
+              </Grid>
+              <Grid item>
+                <Button
+                  fullWidth
+                  color="primary"
+                  variant="contained"
+                  type="submit"
+                >
+                  Enviar
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </Grid>
+      </Grid>
     </Container>
   );
 };
