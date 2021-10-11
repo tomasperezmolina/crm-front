@@ -11,6 +11,8 @@ import {
 } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useRouter } from "next/router";
+import { StepType } from "../../model/opportunity";
+import { stepTypeToSpanish } from "../../spanish/opportunity";
 
 interface OpportunitiesProps {
   id?: string;
@@ -22,14 +24,14 @@ interface Client {
 }
 
 interface State {
-  name: string;
+  name: StepType;
   color: string;
   clients: Client[];
 }
 
 const states: State[] = [
   {
-    name: "Prospecto",
+    name: "Prospect",
     color: '#D4F5EA',
     clients: Array(5)
       .fill(0)
@@ -40,7 +42,7 @@ const states: State[] = [
       })),
   },
   {
-    name: "Primera reunión",
+    name: 'First meeting',
     color: '#E8A980',
     clients: Array(1)
       .fill(0)
@@ -51,7 +53,7 @@ const states: State[] = [
       })),
   },
   {
-    name: "Desarrollo",
+    name: 'Development',
     color: '#FEFCAD',
     clients: Array(4)
       .fill(0)
@@ -62,7 +64,7 @@ const states: State[] = [
       })),
   },
   {
-    name: "Desarrollo de POC",
+    name: 'POC development',
     color: '#BBFAFD',
     clients: Array(2)
       .fill(0)
@@ -73,7 +75,7 @@ const states: State[] = [
       })),
   },
   {
-    name: "Implementación de POC",
+    name: 'POC implementation',
     color: '#EDB5FD',
     clients: Array(3)
       .fill(0)
@@ -84,7 +86,7 @@ const states: State[] = [
       })),
   },
   {
-    name: "Negociación",
+    name: 'Negotiation',
     color: '#FF7174',
     clients: Array(3)
       .fill(0)
@@ -127,7 +129,7 @@ const Opportunities: NextPage<OpportunitiesProps> = () => {
           <Grid item container direction="row" columnSpacing={2}>
             {states.map((s, idx, array) => (
               <Grid xs={2} key={idx} item sx={{ position: "relative" }}>
-                <Typography align="center">{s.name}</Typography>
+                <Typography align="center">{stepTypeToSpanish(s.name)}</Typography>
                 {idx !== array.length - 1 && (
                   <ArrowForwardIosIcon
                     sx={{
@@ -164,7 +166,7 @@ const Opportunities: NextPage<OpportunitiesProps> = () => {
               {s.clients.map((c, cIdx) => (
                 <Grid item key={cIdx}>
                   <Card>
-                    <CardActionArea>
+                    <CardActionArea onClick={() => router.push(`opportunity/${cIdx}`)}>
                       <CardContent>
                         <Typography variant="h5" gutterBottom>{c.name}</Typography>
                         <Box sx={{height: '3px', bgcolor: s.color, marginBottom: 2}}/>
