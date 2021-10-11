@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
+import formikProps from "../../common/formikProps";
 
 const validationSchema = yup.object({
   email: yup
@@ -51,13 +52,7 @@ const Login: NextPage<LoginProps> = () => {
                 <Box style={{ minHeight: "80px" }}>
                   <TextField
                     fullWidth
-                    id="email"
-                    name="email"
-                    label="Email"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                    error={formik.touched.email && Boolean(formik.errors.email)}
-                    helperText={formik.touched.email && formik.errors.email}
+                    {...formikProps('email', 'Email', formik)}
                   />
                 </Box>
               </Grid>
@@ -65,18 +60,7 @@ const Login: NextPage<LoginProps> = () => {
                 <Box style={{ minHeight: "80px" }}>
                   <TextField
                     fullWidth
-                    id="password"
-                    name="password"
-                    label="Contraseña"
-                    type="password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    error={
-                      formik.touched.password && Boolean(formik.errors.password)
-                    }
-                    helperText={
-                      formik.touched.password && formik.errors.password
-                    }
+                    {...formikProps('password', 'Contraseña', formik)}
                   />
                 </Box>
               </Grid>

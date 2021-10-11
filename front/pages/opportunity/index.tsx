@@ -10,6 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { useRouter } from "next/router";
 
 interface OpportunitiesProps {
   id?: string;
@@ -97,6 +98,7 @@ const states: State[] = [
 
 const Opportunities: NextPage<OpportunitiesProps> = () => {
   const paddingX = 30;
+  const router = useRouter();
   return (
     <>
       <Grid sx={{ height: "inherit" }} container direction="column">
@@ -107,6 +109,7 @@ const Opportunities: NextPage<OpportunitiesProps> = () => {
                 Oportunidades
               </Typography>
               <Button
+                onClick={() => router.push('/opportunity/new')}
                 sx={{
                   position: "absolute",
                   top: "50%",
