@@ -9,12 +9,11 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  TextField,
   Typography,
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import formikProps from "../../common/formikProps";
+import formikProps from "../../common/formik-props";
 import { companyTypes, industries, regions } from "../../model/company";
 import {
   companyTypeToSpanish,
@@ -22,6 +21,7 @@ import {
   regionToSpanish,
 } from "../../spanish/company";
 import { useRouter } from "next/router";
+import FormikTextField from "../../common/formik-text-field";
 
 const maxNotesLenght = 1000;
 
@@ -73,7 +73,7 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
-      router.push('10/add-contact');
+      router.push("10/add-contact");
     },
   });
 
@@ -96,28 +96,28 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
               <Grid container direction="row" columnSpacing={2}>
                 <Grid xs={6} item container direction="column" rowSpacing={2}>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("email", "Email", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="email"
+                      label="Email"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("name", "Nombre", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="name"
+                      label="Nombre"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("webpage", "Página web", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="webpage"
+                      label="Página web"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
                     <Box style={{ minHeight: "80px" }}>
@@ -125,7 +125,12 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
                         <InputLabel id="region-label">Región</InputLabel>
                         <Select
                           labelId="region-label"
-                          {...formikProps("region", "Región", formik)}
+                          {...formikProps(
+                            "region",
+                            "Región",
+                            formik,
+                            validationSchema
+                          )}
                         >
                           {regions.map((t, idx) => (
                             <MenuItem key={idx} value={t}>
@@ -149,7 +154,8 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
                           {...formikProps(
                             "companyType",
                             "Tipo de compañia",
-                            formik
+                            formik,
+                            validationSchema
                           )}
                         >
                           {companyTypes.map((t, idx) => (
@@ -167,7 +173,12 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
                         <InputLabel id="industry-label">Industria</InputLabel>
                         <Select
                           labelId="industry-label"
-                          {...formikProps("industry", "Industria", formik)}
+                          {...formikProps(
+                            "industry",
+                            "Industria",
+                            formik,
+                            validationSchema
+                          )}
                         >
                           {industries.map((t, idx) => (
                             <MenuItem key={idx} value={t}>
@@ -179,14 +190,14 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
                     </Box>
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "180px" }}>
-                      <TextField
-                        fullWidth
-                        multiline
-                        rows={5}
-                        {...formikProps("notes", "Notas", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="notes"
+                      label="Notas"
+                      multiline
+                      rows={5}
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
                     <Button

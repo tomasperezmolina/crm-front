@@ -13,6 +13,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useRouter } from "next/router";
 import { StepType } from "../../model/opportunity";
 import { stepTypeToSpanish } from "../../spanish/opportunity";
+import { grey } from "@mui/material/colors";
 
 interface OpportunitiesProps {
   id?: string;
@@ -32,7 +33,7 @@ interface State {
 const states: State[] = [
   {
     name: "Prospect",
-    color: '#D4F5EA',
+    color: 'hsla(160, 62%, 50%, 1)',
     clients: Array(5)
       .fill(0)
       .map(() => ({
@@ -43,7 +44,7 @@ const states: State[] = [
   },
   {
     name: 'First meeting',
-    color: '#E8A980',
+    color: 'hsla(24, 69%, 50%, 1)',
     clients: Array(1)
       .fill(0)
       .map(() => ({
@@ -54,7 +55,7 @@ const states: State[] = [
   },
   {
     name: 'Development',
-    color: '#FEFCAD',
+    color: 'hsla(59, 98%, 50%, 1)',
     clients: Array(4)
       .fill(0)
       .map(() => ({
@@ -65,7 +66,7 @@ const states: State[] = [
   },
   {
     name: 'POC development',
-    color: '#BBFAFD',
+    color: 'hsla(183, 94%, 50%, 1)',
     clients: Array(2)
       .fill(0)
       .map(() => ({
@@ -76,7 +77,7 @@ const states: State[] = [
   },
   {
     name: 'POC implementation',
-    color: '#EDB5FD',
+    color: 'hsla(287, 95%, 50%, 1)',
     clients: Array(3)
       .fill(0)
       .map(() => ({
@@ -87,7 +88,7 @@ const states: State[] = [
   },
   {
     name: 'Negotiation',
-    color: '#FF7174',
+    color: 'hsla(359, 100%, 50%, 1)',
     clients: Array(3)
       .fill(0)
       .map(() => ({
@@ -145,6 +146,7 @@ const Opportunities: NextPage<OpportunitiesProps> = () => {
           </Grid>
         </Grid>
         <Grid
+          bgcolor={grey[200]}
           item
           container
           sx={{ overflowY: "scroll" }}

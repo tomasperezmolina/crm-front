@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import formikProps from "../../common/formikProps";
+import FormikTextField from "../../common/formik-text-field";
 
 const validationSchema = yup.object({
   email: yup
@@ -38,8 +38,13 @@ const Login: NextPage<LoginProps> = () => {
   });
 
   return (
-    <Container maxWidth="sm" sx={{height: 'inherit'}}>
-      <Grid container direction='column' justifyContent='center' sx={{height: 'inherit'}}>
+    <Container maxWidth="sm" sx={{ height: "inherit" }}>
+      <Grid
+        container
+        direction="column"
+        justifyContent="center"
+        sx={{ height: "inherit" }}
+      >
         <Grid item>
           <Typography variant="h1" align="center" gutterBottom>
             /CRM/
@@ -49,20 +54,21 @@ const Login: NextPage<LoginProps> = () => {
           <form onSubmit={formik.handleSubmit}>
             <Grid container direction="column" rowSpacing={2}>
               <Grid item>
-                <Box style={{ minHeight: "80px" }}>
-                  <TextField
-                    fullWidth
-                    {...formikProps('email', 'Email', formik)}
-                  />
-                </Box>
+                <FormikTextField
+                  name="email"
+                  label="Email"
+                  formik={formik}
+                  validationSchema={validationSchema}
+                />
               </Grid>
               <Grid item>
-                <Box style={{ minHeight: "80px" }}>
-                  <TextField
-                    fullWidth
-                    {...formikProps('password', 'Contraseña', formik)}
-                  />
-                </Box>
+                <FormikTextField
+                  name="password"
+                  type='password'
+                  label="Contraseña"
+                  formik={formik}
+                  validationSchema={validationSchema}
+                />
               </Grid>
               <Grid item>
                 <Button

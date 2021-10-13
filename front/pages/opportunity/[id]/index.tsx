@@ -9,9 +9,10 @@ import {
   Typography,
   Container,
 } from "@mui/material";
-import { steps } from "../../../model/opportunity";
+import { steps, StepType } from "../../../model/opportunity";
 import { stepTypeToSpanish } from "../../../spanish/opportunity";
 import { Stepped } from "../../../model/company";
+import OpportunityFirstMeeting from "../../../opportunity/first-meeting";
 
 interface OpportunityProps {
   id?: string;
@@ -20,6 +21,17 @@ interface OpportunityProps {
 const mockOpportunity: Stepped = {
   step: "Prospect",
 };
+
+const renderStage = (stage: StepType) => {
+  switch (stage) {
+    case 'Prospect': return <OpportunityFirstMeeting/>;
+    case 'First meeting': return <OpportunityFirstMeeting/>;
+    case 'Development': return <OpportunityFirstMeeting/>;
+    case 'POC development': return <OpportunityFirstMeeting/>;
+    case 'POC implementation': return <OpportunityFirstMeeting/>;
+    case 'Negotiation': return <OpportunityFirstMeeting/>;
+  }
+}
 
 const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
   const [activeStep, setActiveStep] = React.useState(
@@ -52,29 +64,30 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
     setActiveStep(step);
   };
 
-  const handleReset = () => {
-    setActiveStep(0);
-    setOpportunity({step: 'Prospect'});
-  };
-
   const handleComplete = () => {
-    setOpportunity({step: steps[steps.indexOf(opportunity.step) + 1]})
+    setOpportunity({ step: steps[steps.indexOf(opportunity.step) + 1] });
     handleNext();
   };
 
   const stepIsCompleted = (stepIndex: number) => {
     return stepIndex < steps.indexOf(opportunity.step);
-  }
+  };
 
   return (
-    <Container maxWidth="xl" sx={{paddingTop: 2}}>
+    <Box sx={{height: 'inherit', overflowY: 'scroll'}}>
+    <Container maxWidth="xl" sx={{ paddingY: 2 }}>
       <Typography variant="h4" align="center" gutterBottom>
         Oportunidad: Blablabal
       </Typography>
       <Box sx={{ width: "100%" }}>
         <Stepper nonLinear activeStep={activeStep}>
           {steps.slice(0, -1).map((label, index) => (
-            <Step key={label} last completed={stepIsCompleted(index)} disabled={!stepIsCompleted(index-1)}>
+            <Step
+              key={label}
+              last
+              completed={stepIsCompleted(index)}
+              disabled={!stepIsCompleted(index - 1)}
+            >
               <StepButton color="inherit" onClick={handleStep(index)}>
                 {stepTypeToSpanish(label)}
               </StepButton>
@@ -82,21 +95,8 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
           ))}
         </Stepper>
         <div>
-          {allStepsCompleted() ? (
+          {!allStepsCompleted() && (
             <React.Fragment>
-              <Typography sx={{ mt: 2, mb: 1 }}>
-                All steps completed - you&apos;re finished
-              </Typography>
-              <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-                <Box sx={{ flex: "1 1 auto" }} />
-                <Button onClick={handleReset}>Reset</Button>
-              </Box>
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Typography sx={{ mt: 2, mb: 1 }}>
-                Step {activeStep + 1}
-              </Typography>
               <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
                 <Button
                   color="inherit"
@@ -104,33 +104,30 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
                   onClick={handleBack}
                   sx={{ mr: 1 }}
                 >
-                  Back
+                  Anterior
                 </Button>
                 <Box sx={{ flex: "1 1 auto" }} />
-                <Button onClick={handleNext} sx={{ mr: 1 }} disabled={!stepIsCompleted(activeStep)}>
-                  Next
+                <Button
+                  onClick={handleNext}
+                  sx={{ mr: 1 }}
+                  disabled={!stepIsCompleted(activeStep)}
+                >
+                  Siguiente
                 </Button>
                 {activeStep !== steps.length &&
-                  (stepIsCompleted(activeStep) ? (
-                    <Typography
-                      variant="caption"
-                      sx={{ display: "inline-block" }}
-                    >
-                      Step {activeStep + 1} already completed
-                    </Typography>
-                  ) : (
-                    <Button onClick={handleComplete}>
-                      {completedSteps() === totalSteps() - 1
-                        ? "Finish"
-                        : "Complete Step"}
-                    </Button>
-                  ))}
+                  !stepIsCompleted(activeStep) && (
+                    <Button onClick={handleComplete}>Completar etapa</Button>
+                  )}
               </Box>
             </React.Fragment>
           )}
         </div>
+        <Container maxWidth='lg'>
+        {renderStage(steps[activeStep])}
+        </Container>
       </Box>
     </Container>
+    </Box>
   );
 };
 

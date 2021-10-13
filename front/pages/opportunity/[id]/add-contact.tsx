@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import formikProps from "../../../common/formikProps";
 import { Company } from "../../../model/company";
 import {
   companyTypeToSpanish,
@@ -20,6 +19,7 @@ import {
 } from "../../../spanish/company";
 import { useRouter } from "next/router";
 import "yup-phone";
+import FormikTextField from "../../../common/formik-text-field";
 
 const validationSchema = yup.object({
   name: yup.string().required("Se require un nombre"),
@@ -117,44 +117,44 @@ const NewOpportunityContact: NextPage<NewOpportunityContactProps> = ({
               <form onSubmit={formik.handleSubmit}>
                 <Grid container direction="column" rowSpacing={2}>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("email", "Email", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="email"
+                      label="Email"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("name", "Nombre", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="name"
+                      label="Nombre"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("surname", "Apellido", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="surname"
+                      label="Apellido"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("linkedin", "LinkedIn", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="linkedin"
+                      label="LinkedIn"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <TextField
-                        fullWidth
-                        {...formikProps("phone", "Teléfono", formik)}
-                      />
-                    </Box>
+                    <FormikTextField
+                      name="phone"
+                      label="Teléfono"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
                   </Grid>
                   <Grid item>
                     <Button

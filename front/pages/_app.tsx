@@ -71,7 +71,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         footer {
           flex: 0 0 auto;
           width: 100%;
-          height: 100px;
+          height: 50px;
           border-top: 1px solid #eaeaea;
           display: flex;
           justify-content: center;
