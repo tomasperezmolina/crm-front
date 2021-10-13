@@ -73,7 +73,7 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
-      router.push("10/add-contact");
+      router.push("/opportunity/0");
     },
   });
 

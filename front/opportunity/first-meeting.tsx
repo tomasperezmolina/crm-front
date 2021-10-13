@@ -2,11 +2,9 @@ import React from "react";
 import {
   Button,
   Grid,
-  Typography,
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { stepTypeToSpanish } from "../spanish/opportunity";
 import FormikTextField from "../common/formik-text-field";
 
 const maxNotesLenght = 1000;
@@ -68,11 +66,6 @@ export default function OpportunityFirstMeeting() {
       justifyContent="center"
       sx={{ height: "inherit" }}
     >
-      <Grid item>
-        <Typography variant="h4" align="center" gutterBottom>
-          {stepTypeToSpanish("First meeting")}
-        </Typography>
-      </Grid>
       <Grid item>
         <form onSubmit={formik.handleSubmit}>
           <Grid
