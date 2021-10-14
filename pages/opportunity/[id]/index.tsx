@@ -13,8 +13,14 @@ import {
 import { steps, StepType } from "../../../model/opportunity";
 import { stepTypeToSpanish } from "../../../spanish/opportunity";
 import { Stepped } from "../../../model/company";
-import OpportunityFirstMeeting from "../../../opportunity/first-meeting";
-import OpportunityProspect from "../../../opportunity/prospect";
+import {
+  OpportunityProspect,
+  OpportunityFirstMeeting,
+  OpportunityDevelopment,
+  OpportunityPOCDevelopment,
+  OpportunityPOCImplementation,
+  OpportunityNegotiation,
+} from "../../../opportunity";
 
 interface OpportunityProps {
   id?: string;
@@ -31,13 +37,13 @@ const renderStage = (stage: StepType) => {
     case "First meeting":
       return <OpportunityFirstMeeting />;
     case "Development":
-      return <OpportunityFirstMeeting />;
+      return <OpportunityDevelopment />;
     case "POC development":
-      return <OpportunityFirstMeeting />;
+      return <OpportunityPOCDevelopment />;
     case "POC implementation":
-      return <OpportunityFirstMeeting />;
+      return <OpportunityPOCImplementation />;
     case "Negotiation":
-      return <OpportunityFirstMeeting />;
+      return <OpportunityNegotiation />;
   }
 };
 

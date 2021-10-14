@@ -22,6 +22,7 @@ import {
 } from "../../spanish/company";
 import { useRouter } from "next/router";
 import FormikTextField from "../../common/formik-text-field";
+import formikInitialValues from "../../common/formik-initial-values";
 
 const maxNotesLenght = 1000;
 
@@ -61,15 +62,7 @@ interface NewOpportunityProps {}
 const NewOpportunity: NextPage<NewOpportunityProps> = () => {
   const router = useRouter();
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      name: "",
-      webpage: "",
-      companyType: "",
-      industry: "",
-      region: "",
-      notes: "",
-    },
+    initialValues: formikInitialValues(validationSchema.fields),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));

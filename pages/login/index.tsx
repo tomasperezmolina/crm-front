@@ -11,6 +11,7 @@ import {
 import * as yup from "yup";
 import { useFormik } from "formik";
 import FormikTextField from "../../common/formik-text-field";
+import formikInitialValues from "../../common/formik-initial-values";
 
 const validationSchema = yup.object({
   email: yup
@@ -27,10 +28,7 @@ interface LoginProps {}
 
 const Login: NextPage<LoginProps> = () => {
   const formik = useFormik({
-    initialValues: {
-      email: "",
-      password: "",
-    },
+    initialValues: formikInitialValues(validationSchema.fields),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));

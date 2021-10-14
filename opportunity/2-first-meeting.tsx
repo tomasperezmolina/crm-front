@@ -6,6 +6,7 @@ import {
 import * as yup from "yup";
 import { useFormik } from "formik";
 import FormikTextField from "../common/formik-text-field";
+import formikInitialValues from "../common/formik-initial-values";
 
 const maxNotesLenght = 1000;
 
@@ -13,7 +14,7 @@ const validationSchema = yup.object({
   budgetStatus: yup.string().required("Se requiere un estado del presupuesto"),
   employeeAmount: yup
     .number()
-    .min(1, "La cantidad de empleados debe ser positiva")
+    .positive("Se require un número positivo")
     .required("Se requiere una cantidad de empleados aproximada"),
   locations: yup.string().required("Se require una lista de ubicaciones"),
   nextMeeting: yup
@@ -41,18 +42,7 @@ const validationSchema = yup.object({
 
 export default function OpportunityFirstMeeting() {
   const formik = useFormik({
-    initialValues: {
-      budgetStatus: "",
-      employeeAmount: "",
-      locations: "",
-      nextMeeting: "",
-      notes: "",
-      othersInvolved: "",
-      problem: "",
-      projectDate: "",
-      projectDuration: "",
-      projectOwner: "",
-    },
+    initialValues: formikInitialValues(validationSchema.fields),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
