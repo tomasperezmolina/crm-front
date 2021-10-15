@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import FormikTextField from "../common/formik-text-field";
+import {FormikTextField}  from "../common/formik-fields";
 import formikInitialValues from "../common/formik-initial-values";
 
 const maxNotesLenght = 1000;

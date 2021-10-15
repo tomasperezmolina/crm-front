@@ -21,7 +21,7 @@ import {
   regionToSpanish,
 } from "../../spanish/company";
 import { useRouter } from "next/router";
-import FormikTextField from "../../common/formik-text-field";
+import { FormikSelectField, FormikTextField } from "../../common/formik-fields";
 import formikInitialValues from "../../common/formik-initial-values";
 
 const maxNotesLenght = 1000;
@@ -113,74 +113,48 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
                     />
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="region-label">Región</InputLabel>
-                        <Select
-                          labelId="region-label"
-                          {...formikProps(
-                            "region",
-                            "Región",
-                            formik,
-                            validationSchema
-                          )}
-                        >
-                          {regions.map((t, idx) => (
-                            <MenuItem key={idx} value={t}>
-                              {regionToSpanish(t)}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Box>
+                    <FormikSelectField
+                      name="region"
+                      label="Región"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    >
+                      {regions.map((t, idx) => (
+                        <MenuItem key={idx} value={t}>
+                          {regionToSpanish(t)}
+                        </MenuItem>
+                      ))}
+                    </FormikSelectField>
                   </Grid>
                 </Grid>
                 <Grid xs={6} item container direction="column" rowSpacing={2}>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="company-type-label">
-                          Tipo de compañía
-                        </InputLabel>
-                        <Select
-                          labelId="company-type-label"
-                          {...formikProps(
-                            "companyType",
-                            "Tipo de compañia",
-                            formik,
-                            validationSchema
-                          )}
-                        >
-                          {companyTypes.map((t, idx) => (
-                            <MenuItem key={idx} value={t}>
-                              {companyTypeToSpanish(t)}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Box>
+                    <FormikSelectField
+                      name="companyType"
+                      label="Tipo de compañia"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    >
+                      {companyTypes.map((t, idx) => (
+                        <MenuItem key={idx} value={t}>
+                          {companyTypeToSpanish(t)}
+                        </MenuItem>
+                      ))}
+                    </FormikSelectField>
                   </Grid>
                   <Grid item>
-                    <Box style={{ minHeight: "80px" }}>
-                      <FormControl fullWidth>
-                        <InputLabel id="industry-label">Industria</InputLabel>
-                        <Select
-                          labelId="industry-label"
-                          {...formikProps(
-                            "industry",
-                            "Industria",
-                            formik,
-                            validationSchema
-                          )}
-                        >
-                          {industries.map((t, idx) => (
-                            <MenuItem key={idx} value={t}>
-                              {industryToSpanish(t)}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-                    </Box>
+                    <FormikSelectField
+                      name="industry"
+                      label="Industria"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    >
+                      {industries.map((t, idx) => (
+                        <MenuItem key={idx} value={t}>
+                          {industryToSpanish(t)}
+                        </MenuItem>
+                      ))}
+                    </FormikSelectField>
                   </Grid>
                   <Grid item>
                     <FormikTextField

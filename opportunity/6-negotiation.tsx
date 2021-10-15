@@ -2,7 +2,7 @@ import React from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import FormikTextField from "../common/formik-text-field";
+import {FormikTextField}  from "../common/formik-fields";
 import formikInitialValues from "../common/formik-initial-values";
 
 const validationSchema = yup.object({

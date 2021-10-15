@@ -5,12 +5,14 @@ import React from "react";
 import styles from "../styles/Home.module.css";
 import Navbar from "../common/navbar";
 import { Typography } from "@mui/material";
-
-
+import LicenseBuilder from "../common/license-builder";
 
 const Home: NextPage = () => {
   return (
-    <Typography>Content!</Typography>
+    <>
+      <Typography>Content!</Typography>
+      <LicenseBuilder />
+    </>
   );
 };
 
