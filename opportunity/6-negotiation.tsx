@@ -3,7 +3,7 @@ import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import {FormikTextField}  from "../common/formik-fields";
-import formikInitialValues from "../common/formik-initial-values";
+import { formikInitialValues } from "../common/formik-props";
 
 const validationSchema = yup.object({
   address: yup.string().required("Se requiere una dirección"),
@@ -19,7 +19,7 @@ const validationSchema = yup.object({
 
 export default function OpportunityPOCDevelopment() {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields),
+    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));

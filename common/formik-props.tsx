@@ -17,6 +17,22 @@ const getInputLabelProps = (inputType: string) => {
   else return undefined;
 };
 
+type InitialValues<T> = {
+  [index in keyof T]: any;
+};
+
+export function formikInitialValues<T>(
+  fields: T,
+  validationSchema: any
+): InitialValues<T> {
+  return Object.keys(fields).reduce((prev: any, curr: string) => {
+    return {
+      ...prev,
+      [curr]: validationSchema.fields[curr].type === "array" ? [] : "",
+    };
+  }, {});
+}
+
 export function formikTextFieldProps(
   name: string,
   label: string,

@@ -10,7 +10,7 @@ import {
 } from "../spanish/company";
 import "yup-phone";
 import {FormikTextField} from "../common/formik-fields";
-import formikInitialValues from "../common/formik-initial-values";
+import { formikInitialValues } from "../common/formik-props";
 
 const validationSchema = yup.object({
   name: yup.string().required("Se require un nombre"),
@@ -43,7 +43,7 @@ const mockCompany: Company = {
 
 export default function OpportunityProspect() {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields),
+    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));

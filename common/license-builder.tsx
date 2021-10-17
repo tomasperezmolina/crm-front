@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { alpha } from "@mui/material/styles";
 import {
   Button,
@@ -24,8 +24,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { FormikSelectField, FormikTextField } from "./formik-fields";
-import formikInitialValues from "../common/formik-initial-values";
 import { nanoid } from "nanoid";
+import { formikInitialValues } from "./formik-props";
 
 const programTypes = ["Word", "Excel", "PowerPoint", "Outlook"] as const;
 type ProgramType = typeof programTypes[number];
@@ -48,7 +48,7 @@ const validationSchema = yup.object({
     .required("Se require una cantidad de licencias"),
 });
 
-interface LicenseRow {
+export interface LicenseRow {
   id: string;
   program: ProgramType;
   license: LicenseType;
@@ -89,11 +89,24 @@ function parseLicenseRow(values: {
   );
 }
 
-export default function LicenseBuilder() {
-  const [rows, setRows] = useState<LicenseRow[]>([]);
+interface LicenseBuilderProps {
+  title: string;
+  value: LicenseRow[];
+  onChange: (rows: LicenseRow[]) => void;
+}
+
+export default function LicenseBuilder({
+  title,
+  value,
+  onChange,
+}: LicenseBuilderProps) {
+  const [rows, setRows] = useState<LicenseRow[]>(value);
 
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       addRow(parseLicenseRow(values));
@@ -104,18 +117,20 @@ export default function LicenseBuilder() {
     const presentRow = rows.find(
       (r) => r.program === row.program && r.license === row.license
     );
+    let newRows = [];
     if (!presentRow) {
-      setRows([...rows, row]);
+      newRows = [...rows, row];
     } else {
       const replacement = {
         ...presentRow,
         amount: presentRow.amount + row.amount,
       };
-      const newRows = rows
+      newRows = rows
         .filter((r) => r.id !== presentRow.id)
         .concat([replacement]);
-      setRows(newRows);
     }
+    setRows(newRows);
+    onChange(newRows);
     formik.resetForm();
   };
 
@@ -124,7 +139,7 @@ export default function LicenseBuilder() {
   };
 
   return (
-    <Grid container direction="row" columns={2} columnSpacing={2}>
+    <Grid container direction="row" columns={3} columnSpacing={2}>
       <Grid
         xs={1}
         item
@@ -186,8 +201,8 @@ export default function LicenseBuilder() {
           </form>
         </Grid>
       </Grid>
-      <Grid xs={1} item container direction="column">
-        <EnhancedTable rows={rows} onDeleteRows={handleDeleteRows} />
+      <Grid xs={2} item container direction="column">
+        <EnhancedTable title={title} rows={rows} onDeleteRows={handleDeleteRows} />
       </Grid>
     </Grid>
   );
@@ -315,12 +330,14 @@ function EnhancedTableHead({
 }
 
 interface EnhancedTableToolbarProps {
+  title: string;
   numSelected: number;
   onDelete: () => void;
   totalPrice: number;
 }
 
 const EnhancedTableToolbar = ({
+  title,
   numSelected,
   onDelete,
   totalPrice,
@@ -363,14 +380,14 @@ const EnhancedTableToolbar = ({
             id="tableTitle"
             component="div"
           >
-            Licencias
+            {title}
           </Typography>
           <Typography
             sx={{ flex: "1 1 100%" }}
             variant="h6"
             id="tableTitle"
             component="div"
-            align='right'
+            align="right"
           >
             Total: $ {totalPrice}
           </Typography>
@@ -383,11 +400,12 @@ const EnhancedTableToolbar = ({
 type SorteableKey = keyof Omit<LicenseRow, "id">;
 
 interface EnhancedTableProps {
+  title: string;
   rows: LicenseRow[];
   onDeleteRows: (rowIds: readonly string[]) => void;
 }
 
-function EnhancedTable({ rows, onDeleteRows }: EnhancedTableProps) {
+function EnhancedTable({ title, rows, onDeleteRows }: EnhancedTableProps) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<SorteableKey>("program");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -456,8 +474,9 @@ function EnhancedTable({ rows, onDeleteRows }: EnhancedTableProps) {
 
   return (
     <Box sx={{ width: "100%" }}>
-      <Paper sx={{ width: "100%", mb: 2 }}>
+      <Paper sx={{ width: "100%" }}>
         <EnhancedTableToolbar
+          title={title}
           numSelected={selected.length}
           onDelete={handleDeleteSelected}
           totalPrice={rows.reduce((prev, curr) => prev + curr.totalPrice, 0)}

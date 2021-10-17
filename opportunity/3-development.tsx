@@ -2,21 +2,17 @@ import React from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import {FormikTextField}  from "../common/formik-fields";
-import formikInitialValues from "../common/formik-initial-values";
+import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
+import LicenseBuilder, { LicenseRow } from "../common/license-builder";
+import { formikInitialValues } from "../common/formik-props";
 
 const maxNotesLenght = 1000;
 
 const validationSchema = yup.object({
-  licenseAmount: yup
-    .number()
-    .positive("Se require un número positivo")
-    .required("Se requiere un número de licencias"),
-  packAmount: yup
-    .number()
-    .positive("Se require un número positivo")
-    .required("Se requiere un número de paquetes de oficina"),
-  packs: yup.string().required("Se requiere una lista de paquetes"),
+  packs: yup
+    .array()
+    .min(1, "Se requiere por lo menos una licencia")
+    .required("Se requiere una lista de licencias"),
   principalArea: yup
     .string()
     .required("Se requiere una área principal involucrada"),
@@ -31,7 +27,7 @@ const validationSchema = yup.object({
 
 export default function OpportunityDevelopment() {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields),
+    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
@@ -42,36 +38,20 @@ export default function OpportunityDevelopment() {
     <Grid
       container
       direction="column"
+      rowSpacing={2}
       justifyContent="center"
       sx={{ height: "inherit" }}
     >
       <Grid item>
+        <FormikLicenseBuilder
+          name='packs'
+          label='Licencias'
+          formik={formik}
+        />
+      </Grid>
+      <Grid item>
         <form onSubmit={formik.handleSubmit}>
           <Grid container direction="column" rowSpacing={2}>
-            <Grid item>
-              <FormikTextField
-                name="licenseAmount"
-                label="Cantidad de licencias"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="packAmount"
-                label="Cantidad de paquetes"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="packs"
-                label="Paquetes"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
             <Grid item>
               <FormikTextField
                 name="principalArea"
