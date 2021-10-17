@@ -1,14 +1,14 @@
 import {
   Box,
   FormControl,
+  FormHelperText,
   InputLabel,
-  MenuItem,
   Select,
   TextField,
   TextFieldProps,
 } from "@mui/material";
 import React, { useState, useRef, useEffect } from "react";
-import formikProps from "./formik-props";
+import { formikTextFieldProps, formikSelectProps } from "./formik-props";
 
 interface FormikTextFieldProps {
   name: string;
@@ -37,18 +37,16 @@ export function FormikSelectField({
     }
   }, [minHeight]);
 
-  const fieldProps = formikProps(name, label, formik, validationSchema);
+  const fieldProps = formikSelectProps(name, label, formik, validationSchema);
 
   return (
     <Box ref={ref} style={{ minHeight }}>
-      <FormControl fullWidth required={fieldProps.required} error={fieldProps.error}>
-        <InputLabel id={`${name}-label`}>{label}</InputLabel>
-        <Select
-          labelId={`${name}-label`}
-          {...formikProps(name, label, formik, validationSchema)}
-        >
-          {children}
-        </Select>
+      <FormControl fullWidth {...fieldProps.formControl}>
+        <InputLabel {...fieldProps.inputLabel}>{label}</InputLabel>
+        <Select {...fieldProps.select}>{children}</Select>
+        {fieldProps.helperText && (
+          <FormHelperText>{fieldProps.helperText}</FormHelperText>
+        )}
       </FormControl>
     </Box>
   );
@@ -74,7 +72,7 @@ export function FormikTextField({
     <Box ref={ref} style={{ minHeight }}>
       <TextField
         fullWidth
-        {...formikProps(name, label, formik, validationSchema)}
+        {...formikTextFieldProps(name, label, formik, validationSchema)}
         {...rest}
       />
     </Box>

@@ -17,7 +17,7 @@ const getInputLabelProps = (inputType: string) => {
   else return undefined;
 };
 
-export default function formikProps(
+export function formikTextFieldProps(
   name: string,
   label: string,
   formik: any,
@@ -35,5 +35,34 @@ export default function formikProps(
     required: isRequiredField(validationSchema, name),
     type: inputType,
     InputLabelProps: getInputLabelProps(inputType),
+  };
+}
+
+export function formikSelectProps(
+  name: string,
+  label: string,
+  formik: any,
+  validationSchema: any
+) {
+  const labelId = `${name}-label`;
+  const required = isRequiredField(validationSchema, name);
+
+  return {
+    formControl: {
+      required,
+      error: formik.touched[name] && Boolean(formik.errors[name]),
+    },
+    inputLabel: {
+      id: labelId,
+    },
+    select: {
+      id: name,
+      name: name,
+      labelId,
+      label: `${label}${required && " *"}`,
+      value: formik.values[name],
+      onChange: formik.handleChange,
+    },
+    helperText: formik.touched[name] && formik.errors[name],
   };
 }

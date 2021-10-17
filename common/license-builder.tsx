@@ -21,15 +21,12 @@ import {
   Tooltip,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
-import { visuallyHidden } from "@mui/utils";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { FormikSelectField, FormikTextField } from "./formik-fields";
 import formikInitialValues from "../common/formik-initial-values";
 import { nanoid } from "nanoid";
 
-const maxNotesLenght = 1000;
 
 const programTypes = ["Word", "Excel", "PowerPoint", "Outlook"] as const;
 type ProgramType = typeof programTypes[number];
@@ -267,9 +264,6 @@ function EnhancedTableHead({
             indeterminate={numSelected > 0 && numSelected < rowCount}
             checked={rowCount > 0 && numSelected === rowCount}
             onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
           />
         </TableCell>
         {headCells.map((headCell, idx) => (
@@ -285,11 +279,6 @@ function EnhancedTableHead({
               onClick={createSortHandler(headCell.id)}
             >
               {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </Box>
-              ) : null}
             </TableSortLabel>
           </TableCell>
         ))}
