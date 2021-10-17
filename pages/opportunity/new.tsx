@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import formikProps from "../../common/formik-props";
 import { companyTypes, industries, regions } from "../../model/company";
 import {
   companyTypeToSpanish,
@@ -22,7 +21,7 @@ import {
 } from "../../spanish/company";
 import { useRouter } from "next/router";
 import { FormikSelectField, FormikTextField } from "../../common/formik-fields";
-import formikInitialValues from "../../common/formik-initial-values";
+import {formikInitialValues} from "../../common/formik-props";
 
 const maxNotesLenght = 1000;
 
@@ -62,7 +61,7 @@ interface NewOpportunityProps {}
 const NewOpportunity: NextPage<NewOpportunityProps> = () => {
   const router = useRouter();
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields),
+    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
