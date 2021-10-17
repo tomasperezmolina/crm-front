@@ -2,17 +2,16 @@ import React from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import {FormikTextField}  from "../common/formik-fields";
+import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 
 const maxNotesLenght = 1000;
 
 const validationSchema = yup.object({
-  packets: yup.string().required("Se requiere una lista de paquetes a probar"),
-  duration: yup
-    .number()
-    .min(1)
-    .required("Se requiere un número de días para la duración de la POC"),
+  packs: yup
+    .array()
+    .min(1, "Se requiere por lo menos una licencia")
+    .required("Se requiere una lista de licencias a probar"),
   startDate: yup.date().required("Se requiere una fecha de inicio de la POC"),
   endDate: yup
     .date()
@@ -29,7 +28,10 @@ const validationSchema = yup.object({
 
 export default function OpportunityPOCDevelopment() {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
     onSubmit: (values) => {
       alert(JSON.stringify(values, null, 2));
@@ -42,41 +44,35 @@ export default function OpportunityPOCDevelopment() {
       direction="column"
       justifyContent="center"
       sx={{ height: "inherit" }}
+      rowSpacing={2}
     >
+      <Grid item>
+        <FormikLicenseBuilder
+          name="packs"
+          label="Licencias a probar"
+          formik={formik}
+        />
+      </Grid>
       <Grid item>
         <form onSubmit={formik.handleSubmit}>
           <Grid container direction="column" rowSpacing={2}>
-            <Grid item>
-              <FormikTextField
-                name="packets"
-                label="Paquetes"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="duration"
-                label="Duración (días)"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="startDate"
-                label="Fecha de inicio"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="endDate"
-                label="Fecha de finalización"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
+            <Grid item container direction="row" columns={2} columnSpacing={2}>
+              <Grid item xs={1}>
+                <FormikTextField
+                  name="startDate"
+                  label="Fecha de inicio"
+                  formik={formik}
+                  validationSchema={validationSchema}
+                />
+              </Grid>
+              <Grid item xs={1}>
+                <FormikTextField
+                  name="endDate"
+                  label="Fecha de finalización"
+                  formik={formik}
+                  validationSchema={validationSchema}
+                />
+              </Grid>
             </Grid>
             <Grid item>
               <FormikTextField

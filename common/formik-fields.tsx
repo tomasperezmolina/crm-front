@@ -7,7 +7,7 @@ import {
   TextField,
   TextFieldProps,
 } from "@mui/material";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useResizeDetector } from "react-resize-detector";
 import { formikTextFieldProps, formikSelectProps } from "./formik-props";
 import LicenseBuilder from "./license-builder";
