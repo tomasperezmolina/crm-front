@@ -27,7 +27,6 @@ import { FormikSelectField, FormikTextField } from "./formik-fields";
 import formikInitialValues from "../common/formik-initial-values";
 import { nanoid } from "nanoid";
 
-
 const programTypes = ["Word", "Excel", "PowerPoint", "Outlook"] as const;
 type ProgramType = typeof programTypes[number];
 
@@ -54,6 +53,12 @@ interface LicenseRow {
   program: ProgramType;
   license: LicenseType;
   amount: number;
+  pricePerUnit: number;
+  totalPrice: number;
+}
+
+function licensePrice(program: ProgramType, license: LicenseType) {
+  return 40;
 }
 
 function createLicenseRow(
@@ -61,7 +66,15 @@ function createLicenseRow(
   license: LicenseType,
   amount: number
 ) {
-  return { id: nanoid(), program, license, amount };
+  const pricePerUnit = licensePrice(program, license);
+  return {
+    id: nanoid(),
+    program,
+    license,
+    amount,
+    pricePerUnit,
+    totalPrice: amount * pricePerUnit,
+  };
 }
 
 function parseLicenseRow(values: {
@@ -98,7 +111,9 @@ export default function LicenseBuilder() {
         ...presentRow,
         amount: presentRow.amount + row.amount,
       };
-      const newRows = rows.filter((r) => r.id !== presentRow.id).concat([replacement]);
+      const newRows = rows
+        .filter((r) => r.id !== presentRow.id)
+        .concat([replacement]);
       setRows(newRows);
     }
     formik.resetForm();
@@ -228,6 +243,18 @@ const headCells: readonly HeadCell[] = [
     disablePadding: false,
     label: "Cantidad",
   },
+  {
+    id: "pricePerUnit",
+    numeric: true,
+    disablePadding: false,
+    label: "Precio/unidad",
+  },
+  {
+    id: "totalPrice",
+    numeric: true,
+    disablePadding: false,
+    label: "Precio total",
+  },
 ];
 
 interface EnhancedTableHeadProps {
@@ -290,17 +317,19 @@ function EnhancedTableHead({
 interface EnhancedTableToolbarProps {
   numSelected: number;
   onDelete: () => void;
+  totalPrice: number;
 }
 
 const EnhancedTableToolbar = ({
   numSelected,
   onDelete,
+  totalPrice,
 }: EnhancedTableToolbarProps) => {
   return (
     <Toolbar
       sx={{
         pl: { sm: 2 },
-        pr: { xs: 1, sm: 1 },
+        pr: { sm: 2 },
         ...(numSelected > 0 && {
           bgcolor: (theme) =>
             alpha(
@@ -311,31 +340,42 @@ const EnhancedTableToolbar = ({
       }}
     >
       {numSelected > 0 ? (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} seleccionadas
-        </Typography>
+        <>
+          <Typography
+            sx={{ flex: "1 1 100%" }}
+            color="inherit"
+            variant="subtitle1"
+            component="div"
+          >
+            {numSelected} seleccionadas
+          </Typography>
+          <Tooltip title="Delete">
+            <IconButton onClick={onDelete}>
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
+        </>
       ) : (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          variant="h6"
-          id="tableTitle"
-          component="div"
-        >
-          Licencias
-        </Typography>
+        <>
+          <Typography
+            sx={{ flex: "1 1 100%" }}
+            variant="h6"
+            id="tableTitle"
+            component="div"
+          >
+            Licencias
+          </Typography>
+          <Typography
+            sx={{ flex: "1 1 100%" }}
+            variant="h6"
+            id="tableTitle"
+            component="div"
+            align='right'
+          >
+            Total: $ {totalPrice}
+          </Typography>
+        </>
       )}
-      {numSelected > 0 ? (
-        <Tooltip title="Delete">
-          <IconButton onClick={onDelete}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      ) : null}
     </Toolbar>
   );
 };
@@ -420,12 +460,10 @@ function EnhancedTable({ rows, onDeleteRows }: EnhancedTableProps) {
         <EnhancedTableToolbar
           numSelected={selected.length}
           onDelete={handleDeleteSelected}
+          totalPrice={rows.reduce((prev, curr) => prev + curr.totalPrice, 0)}
         />
         <TableContainer>
-          <Table
-            aria-labelledby="tableTitle"
-            size="small"
-          >
+          <Table aria-labelledby="tableTitle" size="small">
             <EnhancedTableHead
               numSelected={selected.length}
               order={order}
@@ -472,6 +510,8 @@ function EnhancedTable({ rows, onDeleteRows }: EnhancedTableProps) {
                       </TableCell>
                       <TableCell align="right">{row.license}</TableCell>
                       <TableCell align="right">{row.amount}</TableCell>
+                      <TableCell align="right">$ {row.pricePerUnit}</TableCell>
+                      <TableCell align="right">$ {row.totalPrice}</TableCell>
                     </TableRow>
                   );
                 })}
