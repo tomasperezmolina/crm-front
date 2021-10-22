@@ -17,6 +17,7 @@ const validationSchema = yup.object({
     .date()
     .required("Se requiere una fecha de finalización de la POC"),
   location: yup.string().required("Se requiere ubicación para la POC"),
+  successCriteria: yup.string().required("Se requiere una serie de criterios de éxito"),
   notes: yup
     .string()
     .optional()
@@ -78,6 +79,14 @@ export default function OpportunityPOCDevelopment() {
               <FormikTextField
                 name="location"
                 label="Ubicación"
+                formik={formik}
+                validationSchema={validationSchema}
+              />
+            </Grid>
+            <Grid item>
+              <FormikTextField
+                name="successCriteria"
+                label="Criterios de éxito"
                 formik={formik}
                 validationSchema={validationSchema}
               />

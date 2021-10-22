@@ -1,6 +1,6 @@
 import { getIn } from "formik";
 
-const isRequiredField = (validationSchema: any, name: string) => {
+export const isRequiredField = (validationSchema: any, name: string) => {
   return !!getIn(validationSchema.describe().fields, name).tests.find(
     ({ name }: { name: string }) => name === "required"
   );
@@ -80,5 +80,24 @@ export function formikSelectProps(
       onChange: formik.handleChange,
     },
     helperText: formik.touched[name] && formik.errors[name],
+  };
+}
+
+
+export function formikRatingProps(
+  name: string,
+  label: string,
+  formik: any,
+  validationSchema: any
+) {
+  return {
+    id: name,
+    name: name,
+    label: label,
+    value: formik.values[name],
+    onChange: formik.handleChange,
+    error: formik.touched[name] && Boolean(formik.errors[name]),
+    helperText: formik.touched[name] && formik.errors[name],
+    required: isRequiredField(validationSchema, name),
   };
 }

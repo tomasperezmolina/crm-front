@@ -35,8 +35,8 @@ const validationSchema = yup.object({
     .date()
     .required("Se require una fecha aproximada del proyecto"),
   projectDuration: yup
-    .number()
-    .required("Se requiere una duración aproximada del proyecto en días"),
+    .string()
+    .required("Se requiere una descripción aproximada de la duración del proyecto"),
   projectOwner: yup.string().required("Se require el nombre del project owner"),
 });
 
@@ -135,7 +135,7 @@ export default function OpportunityFirstMeeting() {
               <Grid item>
                 <FormikTextField
                   name="projectDuration"
-                  label="Duración del proyecto (días)"
+                  label="Duración del proyecto"
                   formik={formik}
                   validationSchema={validationSchema}
                 />

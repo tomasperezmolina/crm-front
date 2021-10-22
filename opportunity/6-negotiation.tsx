@@ -1,8 +1,12 @@
-import React from "react";
-import { Button, Grid } from "@mui/material";
+import React, { useState } from "react";
+import { Button, Grid, Typography } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
+import {
+  FormikFileInput,
+  FormikLicenseBuilder,
+  FormikTextField,
+} from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 
 const validationSchema = yup.object({
@@ -15,6 +19,7 @@ const validationSchema = yup.object({
     .required("Se requiere una lista de licencias a probar"),
   paymentMethod: yup.string().required("Se require un método de pago"),
   paymentTerms: yup.string().required("Se require términos de pago"),
+  contract: yup.object().required("Se require un contrato"),
 });
 
 export default function OpportunityPOCDevelopment() {
@@ -79,6 +84,14 @@ export default function OpportunityPOCDevelopment() {
               <FormikTextField
                 name="paymentTerms"
                 label="Términos de pago"
+                formik={formik}
+                validationSchema={validationSchema}
+              />
+            </Grid>
+            <Grid item>
+              <FormikFileInput
+                name="contract"
+                label="Contrato"
                 formik={formik}
                 validationSchema={validationSchema}
               />

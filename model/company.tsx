@@ -1,7 +1,7 @@
 import { Identifiable } from "./base";
 import { StepType } from "./opportunity";
 
-export const companyTypes = ["Type 1", "Type 2", "Type 3"] as const;
+export const companyTypes = ['Public', 'Private', 'Non profit'] as const;
 export const regions = [
   "South America",
   "North America",
@@ -9,7 +9,7 @@ export const regions = [
   "Asia",
   "Africa",
 ] as const;
-export const industries = ["Industry 1", "Industry 2", "Industry 3"] as const;
+export const industries = ["Manufacture", "Heavy manufacture", "Energy", "Farmaceutical"] as const;
 
 export type CompanyType = typeof companyTypes[number];
 export type Region = typeof regions[number];

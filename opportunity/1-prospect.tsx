@@ -33,9 +33,9 @@ const validationSchema = yup.object({
 const mockCompany: Company = {
   id: 5,
   name: "MOCK S.A.",
-  companyType: "Type 1",
+  companyType: "Private",
   region: "North America",
-  industry: "Industry 1",
+  industry: "Manufacture",
   webpage: "https://formik.org/docs/api/field",
   notes:
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero. Maecenas efficitur, nulla sit amet convallis semper, ligula nulla tempus enim, eu vulputate nibh erat sed dolor. Pellentesque nulla orci, fermentum ut velit posuere, varius bibendum sem. Mauris euismod tristique nulla a vestibulum. Suspendisse eu lacinia sapien. Fusce mattis arcu lectus. Integer placerat, velit eu commodo finibus, lorem enim molestie nibh, vitae feugiat leo sapien tempus mauris. Aliquam pharetra sed nisl eu laoreet. Mauris nisi nisl, ultrices sit amet neque vitae, mattis sagittis lectus. Mauris nec turpis commodo, finibus metus nec, iaculis turpis. ",

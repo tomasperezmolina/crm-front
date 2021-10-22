@@ -2,17 +2,18 @@ import { CompanyType, Industry, Region } from "../model/company";
 
 export function industryToSpanish(i: Industry) {
   switch (i) {
-    case 'Industry 1': return 'Industria 1';
-    case 'Industry 2': return 'Industria 2';
-    case 'Industry 3': return 'Industria 3';
+    case 'Manufacture': return 'Manufactura';
+    case 'Heavy manufacture': return 'Manufactura pesada';
+    case 'Farmaceutical': return 'Farmacéutica';
+    case 'Energy': return 'Energía';
   }
 }
 
 export function companyTypeToSpanish(ct: CompanyType) {
   switch (ct) {
-    case 'Type 1': return 'Tipo 1';
-    case 'Type 2': return 'Tipo 2';
-    case 'Type 3': return 'Tipo 3';
+    case 'Non profit': return 'Sin fines de lucro';
+    case 'Private': return 'Privada';
+    case 'Public': return 'Pública';
   }
 }
 
