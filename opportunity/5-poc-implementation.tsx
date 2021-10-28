@@ -1,12 +1,9 @@
 import React from "react";
-import { Button, Grid, Rating } from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { FormikRating, FormikTextField } from "../common/formik-fields";
-import {
-  formikInitialValues,
-  formikTextFieldProps,
-} from "../common/formik-props";
+import { Form, FormikRating, FormikTextField } from "../common/formik-fields";
+import { POCImplementationInfo } from "../model/opportunity";
 
 const maxNotesLenght = 1000;
 
@@ -34,11 +31,11 @@ export default function OpportunityPOCImplementation() {
   const formik = useFormik({
     initialValues: {
       notes: "",
-      uxRating: 0,
-      processRating: 0,
+      uxRating: "",
+      processRating: "",
     },
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: Form<POCImplementationInfo>) => {
       alert(JSON.stringify(values, null, 2));
     },
   });

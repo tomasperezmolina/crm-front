@@ -224,3 +224,7 @@ export function FormikFileInput({
     </ErrorBox>
   );
 }
+
+export type Form<T> = {
+  [Field in keyof T]: string;
+}

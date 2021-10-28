@@ -1,12 +1,10 @@
 import React from "react";
-import {
-  Button,
-  Grid,
-} from "@mui/material";
+import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import {FormikTextField}  from "../common/formik-fields";
+import { Form, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
+import { FirstMeetingInfo } from "../model/opportunity";
 
 const maxNotesLenght = 1000;
 
@@ -36,15 +34,21 @@ const validationSchema = yup.object({
     .required("Se require una fecha aproximada del proyecto"),
   projectDuration: yup
     .string()
-    .required("Se requiere una descripción aproximada de la duración del proyecto"),
+    .required(
+      "Se requiere una descripción aproximada de la duración del proyecto"
+    ),
   projectOwner: yup.string().required("Se require el nombre del project owner"),
 });
 
 export default function OpportunityFirstMeeting() {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: Form<FirstMeetingInfo>) => {
+      console.log(values);
       alert(JSON.stringify(values, null, 2));
     },
   });

@@ -15,9 +15,8 @@ import {
   DialogContentText,
   DialogActions,
 } from "@mui/material";
-import { steps, StepType } from "../../../model/opportunity";
+import { CancelOpportunityInfo, steps, StepType } from "../../../model/opportunity";
 import { stepTypeToSpanish } from "../../../spanish/opportunity";
-import { Stepped } from "../../../model/company";
 import {
   OpportunityProspect,
   OpportunityFirstMeeting,
@@ -35,7 +34,7 @@ interface OpportunityProps {
   id?: string;
 }
 
-const mockOpportunity: Stepped = {
+const mockOpportunity: { step: StepType } = {
   step: "Prospect",
 };
 
@@ -75,7 +74,7 @@ const FinalizationExplanationDialog = ({
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: CancelOpportunityInfo) => {
       alert(JSON.stringify(values, null, 2));
       onClose();
     },
@@ -107,7 +106,9 @@ const FinalizationExplanationDialog = ({
           />
         </DialogContent>
         <DialogActions>
-          <Button type="button" onClick={onClose}>Cancelar</Button>
+          <Button type="button" onClick={onClose}>
+            Cancelar
+          </Button>
           <Button type="submit">Enviar</Button>
         </DialogActions>
       </form>
@@ -240,7 +241,10 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
           </Box>
         </Container>
       </Box>
-      <FinalizationExplanationDialog open={dialogOpen} onClose={handleCloseDialog} />
+      <FinalizationExplanationDialog
+        open={dialogOpen}
+        onClose={handleCloseDialog}
+      />
     </>
   );
 };

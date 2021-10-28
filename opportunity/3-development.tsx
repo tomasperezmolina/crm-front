@@ -3,8 +3,8 @@ import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
-import LicenseBuilder, { LicenseRow } from "../common/license-builder";
 import { formikInitialValues } from "../common/formik-props";
+import { DevelopmentInfo } from "../model/opportunity";
 
 const maxNotesLenght = 1000;
 
@@ -29,7 +29,7 @@ export default function OpportunityDevelopment() {
   const formik = useFormik({
     initialValues: formikInitialValues(validationSchema.fields, validationSchema),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: DevelopmentInfo) => {
       alert(JSON.stringify(values, null, 2));
     },
   });

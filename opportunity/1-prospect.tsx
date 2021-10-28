@@ -2,15 +2,16 @@ import React from "react";
 import { Button, Divider, Grid, Typography } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { Company } from "../model/company";
 import {
   companyTypeToSpanish,
   industryToSpanish,
   regionToSpanish,
 } from "../spanish/company";
 import "yup-phone";
-import {FormikTextField} from "../common/formik-fields";
+import { Form, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
+import { Contact, OpportunityInfo } from "../model/opportunity";
+import { Identifiable } from "../model/base";
 
 const validationSchema = yup.object({
   name: yup.string().required("Se require un nombre"),
@@ -30,22 +31,26 @@ const validationSchema = yup.object({
     .required("Se requiere un teléfono para el contacto"),
 });
 
-const mockCompany: Company = {
+const mockCompany: OpportunityInfo & Identifiable = {
   id: 5,
   name: "MOCK S.A.",
   companyType: "Private",
   region: "North America",
   industry: "Manufacture",
   webpage: "https://formik.org/docs/api/field",
+  step: "Prospect",
   notes:
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero. Maecenas efficitur, nulla sit amet convallis semper, ligula nulla tempus enim, eu vulputate nibh erat sed dolor. Pellentesque nulla orci, fermentum ut velit posuere, varius bibendum sem. Mauris euismod tristique nulla a vestibulum. Suspendisse eu lacinia sapien. Fusce mattis arcu lectus. Integer placerat, velit eu commodo finibus, lorem enim molestie nibh, vitae feugiat leo sapien tempus mauris. Aliquam pharetra sed nisl eu laoreet. Mauris nisi nisl, ultrices sit amet neque vitae, mattis sagittis lectus. Mauris nec turpis commodo, finibus metus nec, iaculis turpis. ",
 };
 
 export default function OpportunityProspect() {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: Form<Contact>) => {
       alert(JSON.stringify(values, null, 2));
     },
   });

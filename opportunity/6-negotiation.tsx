@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Button, Grid, Typography } from "@mui/material";
+import React from "react";
+import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import {
@@ -8,6 +8,7 @@ import {
   FormikTextField,
 } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
+import { NegotiationInfo } from "../model/opportunity";
 
 const validationSchema = yup.object({
   address: yup.string().required("Se requiere una dirección"),
@@ -22,14 +23,16 @@ const validationSchema = yup.object({
   contract: yup.object().required("Se require un contrato"),
 });
 
-export default function OpportunityPOCDevelopment() {
+
+export default function OpportunityNegotiation() {
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: NegotiationInfo) => {
+      console.log(values);
       alert(JSON.stringify(values, null, 2));
     },
   });

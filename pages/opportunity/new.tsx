@@ -1,36 +1,28 @@
 import type { NextPage } from "next";
 import React from "react";
 import {
-  Box,
   Button,
   Container,
-  FormControl,
   Grid,
-  InputLabel,
   MenuItem,
-  Select,
   Typography,
 } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { companyTypes, industries, regions } from "../../model/company";
 import {
   companyTypeToSpanish,
   industryToSpanish,
   regionToSpanish,
 } from "../../spanish/company";
 import { useRouter } from "next/router";
-import { FormikSelectField, FormikTextField } from "../../common/formik-fields";
+import { Form, FormikSelectField, FormikTextField } from "../../common/formik-fields";
 import {formikInitialValues} from "../../common/formik-props";
+import { companyTypes, industries, OpportunityInfo, regions } from "../../model/opportunity";
 
 const maxNotesLenght = 1000;
 
 const validationSchema = yup.object({
   name: yup.string().required("Se require un nombre"),
-  email: yup
-    .string()
-    .email("Por favor ingresá un email válido")
-    .required("Se requiere un email"),
   webpage: yup
     .string()
     .url("Se requiere un link válido")
@@ -56,6 +48,8 @@ const validationSchema = yup.object({
     ),
 });
 
+type NewOpportunityForm = Form<Omit<OpportunityInfo, "step">>;
+
 interface NewOpportunityProps {}
 
 const NewOpportunity: NextPage<NewOpportunityProps> = () => {
@@ -63,7 +57,7 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
   const formik = useFormik({
     initialValues: formikInitialValues(validationSchema.fields, validationSchema),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: NewOpportunityForm) => {
       alert(JSON.stringify(values, null, 2));
       router.push("/opportunity/0");
     },
@@ -87,14 +81,6 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
             <form onSubmit={formik.handleSubmit}>
               <Grid container direction="row" columnSpacing={2}>
                 <Grid xs={6} item container direction="column" rowSpacing={2}>
-                  <Grid item>
-                    <FormikTextField
-                      name="email"
-                      label="Email"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
                   <Grid item>
                     <FormikTextField
                       name="name"

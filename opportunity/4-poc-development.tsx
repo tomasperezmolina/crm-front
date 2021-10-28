@@ -2,8 +2,13 @@ import React from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
+import {
+  Form,
+  FormikLicenseBuilder,
+  FormikTextField,
+} from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
+import { LicenseRow, POCDevelopmentInfo } from "../model/opportunity";
 
 const maxNotesLenght = 1000;
 
@@ -17,7 +22,9 @@ const validationSchema = yup.object({
     .date()
     .required("Se requiere una fecha de finalización de la POC"),
   location: yup.string().required("Se requiere ubicación para la POC"),
-  successCriteria: yup.string().required("Se requiere una serie de criterios de éxito"),
+  successCriteria: yup
+    .string()
+    .required("Se requiere una serie de criterios de éxito"),
   notes: yup
     .string()
     .optional()
@@ -27,6 +34,12 @@ const validationSchema = yup.object({
     ),
 });
 
+type BasePOCDevelopmentInfo = Omit<POCDevelopmentInfo, "packs">;
+
+type POCDevelopmentInfoForm = Form<BasePOCDevelopmentInfo> & {
+  packs: LicenseRow[];
+};
+
 export default function OpportunityPOCDevelopment() {
   const formik = useFormik({
     initialValues: formikInitialValues(
@@ -34,7 +47,7 @@ export default function OpportunityPOCDevelopment() {
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
+    onSubmit: (values: POCDevelopmentInfoForm) => {
       alert(JSON.stringify(values, null, 2));
     },
   });

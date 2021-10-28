@@ -26,12 +26,7 @@ import { useFormik } from "formik";
 import { FormikSelectField, FormikTextField } from "./formik-fields";
 import { nanoid } from "nanoid";
 import { formikInitialValues } from "./formik-props";
-
-const programTypes = ["Word", "Excel", "PowerPoint", "Outlook"] as const;
-type ProgramType = typeof programTypes[number];
-
-const licenseTypes = ["Home", "Pro"] as const;
-type LicenseType = typeof licenseTypes[number];
+import { LicenseRow, LicenseType, licenseTypes, ProgramType, programTypes } from "../model/opportunity";
 
 const validationSchema = yup.object({
   program: yup
@@ -48,24 +43,20 @@ const validationSchema = yup.object({
     .required("Se require una cantidad de licencias"),
 });
 
-export interface LicenseRow {
-  id: string;
-  program: ProgramType;
-  license: LicenseType;
-  amount: number;
-  pricePerUnit: number;
-  totalPrice: number;
-}
-
 function licensePrice(program: ProgramType, license: LicenseType) {
   return 40;
+}
+
+type LicenseTableRow = LicenseRow & {
+  id: string;
+  totalPrice: number;
 }
 
 function createLicenseRow(
   program: ProgramType,
   license: LicenseType,
   amount: number
-) {
+) : LicenseTableRow {
   const pricePerUnit = licensePrice(program, license);
   return {
     id: nanoid(),
@@ -91,8 +82,8 @@ function parseLicenseRow(values: {
 
 interface LicenseBuilderProps {
   title: string;
-  value: LicenseRow[];
-  onChange: (rows: LicenseRow[]) => void;
+  value: LicenseTableRow[];
+  onChange: (rows: LicenseTableRow[]) => void;
 }
 
 export default function LicenseBuilder({
@@ -100,7 +91,7 @@ export default function LicenseBuilder({
   value,
   onChange,
 }: LicenseBuilderProps) {
-  const [rows, setRows] = useState<LicenseRow[]>(value);
+  const [rows, setRows] = useState<LicenseTableRow[]>(value);
 
   const formik = useFormik({
     initialValues: formikInitialValues(
@@ -113,7 +104,7 @@ export default function LicenseBuilder({
     },
   });
 
-  const addRow = (row: LicenseRow) => {
+  const addRow = (row: LicenseTableRow) => {
     const presentRow = rows.find(
       (r) => r.program === row.program && r.license === row.license
     );
@@ -397,11 +388,11 @@ const EnhancedTableToolbar = ({
   );
 };
 
-type SorteableKey = keyof Omit<LicenseRow, "id">;
+type SorteableKey = keyof Omit<LicenseTableRow, "id">;
 
 interface EnhancedTableProps {
   title: string;
-  rows: LicenseRow[];
+  rows: LicenseTableRow[];
   onDeleteRows: (rowIds: readonly string[]) => void;
 }
 
