@@ -12,6 +12,7 @@ import { Form, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 import { Contact, OpportunityInfo } from "../model/opportunity";
 import { Identifiable } from "../model/base";
+import { InfoTable } from "../common/info-table";
 
 const validationSchema = yup.object({
   name: yup.string().required("Se require un nombre"),
@@ -43,6 +44,37 @@ const mockCompany: OpportunityInfo & Identifiable = {
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero. Maecenas efficitur, nulla sit amet convallis semper, ligula nulla tempus enim, eu vulputate nibh erat sed dolor. Pellentesque nulla orci, fermentum ut velit posuere, varius bibendum sem. Mauris euismod tristique nulla a vestibulum. Suspendisse eu lacinia sapien. Fusce mattis arcu lectus. Integer placerat, velit eu commodo finibus, lorem enim molestie nibh, vitae feugiat leo sapien tempus mauris. Aliquam pharetra sed nisl eu laoreet. Mauris nisi nisl, ultrices sit amet neque vitae, mattis sagittis lectus. Mauris nec turpis commodo, finibus metus nec, iaculis turpis. ",
 };
 
+interface CompanyInfoProps {
+  company: OpportunityInfo & Identifiable;
+}
+
+function CompanyInfo({ company }: CompanyInfoProps) {
+  return (
+    <InfoTable
+      title={company.name}
+      titleVariant="h3"
+      rows={[
+        {
+          title: "Tipo de compañía",
+          content: companyTypeToSpanish(company.companyType)!,
+        },
+        {
+          title: "Industria",
+          content: industryToSpanish(company.industry)!,
+        },
+        {
+          title: "Región",
+          content: regionToSpanish(company.region)!,
+        },
+        {
+          title: "Notas",
+          content: company.notes,
+        },
+      ]}
+    />
+  );
+}
+
 export default function OpportunityProspect() {
   const formik = useFormik({
     initialValues: formikInitialValues(
@@ -58,29 +90,7 @@ export default function OpportunityProspect() {
   return (
     <Grid container direction="row" columnSpacing={6} alignContent="center">
       <Grid item xs={6} container direction="column">
-        <Typography variant="h3" gutterBottom>
-          {mockCompany.name}
-        </Typography>
-        <Divider />
-        <Typography variant="overline">Tipo de compañía</Typography>
-        <Typography variant="body1" gutterBottom>
-          {companyTypeToSpanish(mockCompany.companyType)}
-        </Typography>
-        <Divider />
-        <Typography variant="overline">Industria</Typography>
-        <Typography variant="body1" gutterBottom>
-          {industryToSpanish(mockCompany.industry)}
-        </Typography>
-        <Divider />
-        <Typography variant="overline">Región</Typography>
-        <Typography variant="body1" gutterBottom>
-          {regionToSpanish(mockCompany.region)}
-        </Typography>
-        <Divider />
-        <Typography variant="overline">Notas</Typography>
-        <Typography variant="body1" gutterBottom>
-          {mockCompany.notes}
-        </Typography>
+        <CompanyInfo company={mockCompany} />
       </Grid>
       <Grid item xs={6}>
         <Grid
