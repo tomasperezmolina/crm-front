@@ -1,4 +1,4 @@
-import { CompanyType, Industry, Region } from "../model/company";
+import { CompanyType, Industry, Region } from "../model/opportunity";
 
 export function industryToSpanish(i: Industry) {
   switch (i) {

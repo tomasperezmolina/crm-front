@@ -1,15 +1,33 @@
 import "../styles/globals.css";
 import Head from "next/head";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect } from "react";
 import Navbar from "../common/navbar";
 
 import type { AppProps } from "next/app";
-import { Box } from "@mui/material";
+import { Alert, Box, Snackbar } from "@mui/material";
 import { Provider } from "react-redux";
 import store from "../state/store";
+import { useAppDispatch, useAppSelector } from "../state/dispatch";
+import { closeSnackbar, selectSnackbar } from "../state/snackbar";
+import { loadOpportunities, selectOpportunities } from "../state/opportunities";
 
-function MyApp({ Component, pageProps }: AppProps) {
+function WrappedApp({ Component, pageProps }: AppProps) {
+  const dispatch = useAppDispatch();
+  const {open, message, type} = useAppSelector(selectSnackbar);
+  const handleClose = (_event?: React.SyntheticEvent, reason?: string) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    dispatch(closeSnackbar());
+  };
+  const opportunities = useAppSelector(selectOpportunities);
+  useEffect(() => {
+    if (opportunities.state === 'not-asked') {
+      dispatch(loadOpportunities());
+    }
+  }, [dispatch, opportunities]);
+
   return (
     <>
       <div className="container">
@@ -24,9 +42,16 @@ function MyApp({ Component, pageProps }: AppProps) {
 
         <main>
           <Box sx={{ height: "100%", width: "100%" }}>
-            <Provider store={store}>
-              <Component {...pageProps} />
-            </Provider>
+            <Component {...pageProps} />
+            <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+              <Alert
+                onClose={handleClose}
+                severity={type}
+                sx={{ width: "100%" }}
+              >
+                {message}
+              </Alert>
+            </Snackbar>
           </Box>
         </main>
 
@@ -95,6 +120,14 @@ function MyApp({ Component, pageProps }: AppProps) {
         }
       `}</style>
     </>
+  );
+}
+
+function MyApp(props: AppProps) {
+  return (
+    <Provider store={store}>
+      <WrappedApp {...props}/>
+    </Provider>
   );
 }
 export default MyApp;

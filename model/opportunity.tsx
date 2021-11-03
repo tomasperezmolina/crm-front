@@ -1,5 +1,13 @@
-export const steps = ['Prospect', 'First meeting', 'Development', 'POC development', 'POC implementation', 'Negotiation', 'Completed'] as const;
-export const companyTypes = ['Public', 'Private', 'Non profit'] as const;
+export const steps = [
+  "Prospect",
+  "First meeting",
+  "Development",
+  "POC development",
+  "POC implementation",
+  "Negotiation",
+  "Completed",
+] as const;
+export const companyTypes = ["Public", "Private", "Non profit"] as const;
 export const regions = [
   "South America",
   "North America",
@@ -7,7 +15,12 @@ export const regions = [
   "Asia",
   "Africa",
 ] as const;
-export const industries = ["Manufacture", "Heavy manufacture", "Energy", "Farmaceutical"] as const;
+export const industries = [
+  "Manufacture",
+  "Heavy manufacture",
+  "Energy",
+  "Farmaceutical",
+] as const;
 
 export type CompanyType = typeof companyTypes[number];
 export type Region = typeof regions[number];
@@ -27,15 +40,80 @@ export interface LicenseRow {
   pricePerUnit: number;
 }
 
-export interface OpportunityInfo {
+export interface BaseOpportunityInfo {
   name: string;
   webpage: string;
-  companyType: string;
+  companyType: CompanyType;
   industry: Industry;
   region: Region;
   notes: string;
-  step: StepType;
 }
+
+export type OpportunityInProspect = BaseOpportunityInfo & {
+  step: typeof steps[0];
+  contact?: Contact;
+};
+
+export type OpportunityInFirstMeeting = BaseOpportunityInfo & {
+  step: typeof steps[1];
+  contact: Contact;
+  firstMeetingInfo?: FirstMeetingInfo;
+};
+
+export type OpportunityInDevelopment = BaseOpportunityInfo & {
+  step: typeof steps[2];
+  contact: Contact;
+  firstMeetingInfo: FirstMeetingInfo;
+  developmentInfo?: DevelopmentInfo;
+};
+
+export type OpportunityInPOCDevelopment = BaseOpportunityInfo & {
+  step: typeof steps[3];
+  contact: Contact;
+  firstMeetingInfo: FirstMeetingInfo;
+  developmentInfo: DevelopmentInfo;
+  pocDevelopmentInfo?: POCDevelopmentInfo;
+};
+
+export type OpportunityInPOCImplementation = BaseOpportunityInfo & {
+  step: typeof steps[4];
+  contact: Contact;
+  firstMeetingInfo: FirstMeetingInfo;
+  developmentInfo: DevelopmentInfo;
+  pocDevelopmentInfo: POCDevelopmentInfo;
+  pocImplementationInfo?: POCImplementationInfo;
+};
+
+export type OpportunityInNegotiation = BaseOpportunityInfo & {
+  step: typeof steps[5];
+  contact: Contact;
+  firstMeetingInfo: FirstMeetingInfo;
+  developmentInfo: DevelopmentInfo;
+  pocDevelopmentInfo: POCDevelopmentInfo;
+  pocImplementationInfo: POCImplementationInfo;
+  negotiationInfo?: NegotiationInfo;
+};
+
+export type OpportunityCompleted = BaseOpportunityInfo & {
+  step: typeof steps[6];
+  contact: Contact;
+  firstMeetingInfo: FirstMeetingInfo;
+  developmentInfo: DevelopmentInfo;
+  pocDevelopmentInfo: POCDevelopmentInfo;
+  pocImplementationInfo: POCImplementationInfo;
+  negotiationInfo: NegotiationInfo;
+};
+
+export type OpportunityInfo =
+  | OpportunityInProspect
+  | OpportunityInFirstMeeting
+  | OpportunityInDevelopment
+  | OpportunityInPOCDevelopment
+  | OpportunityInPOCImplementation
+  | OpportunityInNegotiation
+  | OpportunityCompleted;
+
+
 
 export interface Contact {
   name: string;
@@ -49,11 +127,11 @@ export interface FirstMeetingInfo {
   budgetStatus: string;
   employeeAmount: number;
   locations: string;
-  nextMeeting: Date;
+  nextMeetingDate: string;
   notes: string;
   othersInvolved: string;
   problem: string;
-  projectDate: Date;
+  projectDate: string;
   projectDuration: string;
   projectOwner: string;
 }
@@ -66,8 +144,8 @@ export interface DevelopmentInfo {
 
 export interface POCDevelopmentInfo {
   packs: LicenseRow[];
-  startDate: Date;
-  endDate: Date;
+  startDate: string;
+  endDate: string;
   location: string;
   successCriteria: string;
   notes: string;

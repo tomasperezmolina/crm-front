@@ -8,7 +8,17 @@ import {
   FormikTextField,
 } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
-import { LicenseRow, POCDevelopmentInfo } from "../model/opportunity";
+import {
+  OpportunityInPOCDevelopment,
+  POCDevelopmentInfo,
+} from "../model/opportunity";
+import { useAppDispatch } from "../state/dispatch";
+import { openSnackbar } from "../state/snackbar";
+import { saveOpportunityPOCDevelopmentInfo } from "../state/opportunities";
+import { Identifiable } from "../model/base";
+import { InfoTable } from "../common/info-table";
+import { LicenseTable } from "../common/license-builder";
+import { nanoid } from "nanoid";
 
 const maxNotesLenght = 1000;
 
@@ -34,99 +44,160 @@ const validationSchema = yup.object({
     ),
 });
 
-type BasePOCDevelopmentInfo = Omit<POCDevelopmentInfo, "packs">;
+interface OpportunityPOCDevelopmentProps {
+  opportunity: OpportunityInPOCDevelopment & Identifiable;
+}
 
-type POCDevelopmentInfoForm = Form<BasePOCDevelopmentInfo> & {
-  packs: LicenseRow[];
-};
-
-export default function OpportunityPOCDevelopment() {
+export default function OpportunityPOCDevelopment({
+  opportunity,
+}: OpportunityPOCDevelopmentProps) {
+  const dispatch = useAppDispatch();
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values: POCDevelopmentInfoForm) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values: POCDevelopmentInfo) => {
+      try {
+        await dispatch(
+          saveOpportunityPOCDevelopmentInfo({
+            id: opportunity.id,
+            info: values,
+          })
+        );
+      } catch (e: any) {
+        dispatch(openSnackbar({ msg: e.message, type: "error" }));
+      }
     },
   });
 
   return (
-    <Grid
-      container
-      direction="column"
-      justifyContent="center"
-      sx={{ height: "inherit" }}
-      rowSpacing={2}
-    >
-      <Grid item>
-        <FormikLicenseBuilder
-          name="packs"
-          label="Licencias a probar"
-          formik={formik}
-        />
-      </Grid>
-      <Grid item>
-        <form onSubmit={formik.handleSubmit}>
-          <Grid container direction="column" rowSpacing={2}>
-            <Grid item container direction="row" columns={2} columnSpacing={2}>
-              <Grid item xs={1}>
-                <FormikTextField
-                  name="startDate"
-                  label="Fecha de inicio"
-                  formik={formik}
-                  validationSchema={validationSchema}
-                />
-              </Grid>
-              <Grid item xs={1}>
-                <FormikTextField
-                  name="endDate"
-                  label="Fecha de finalización"
-                  formik={formik}
-                  validationSchema={validationSchema}
-                />
-              </Grid>
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="location"
-                label="Ubicación"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="successCriteria"
-                label="Criterios de éxito"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="notes"
-                label="Notas"
-                multiline
-                rows={6}
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <Button
-                fullWidth
-                color="primary"
-                variant="contained"
-                type="submit"
-              >
-                Enviar
-              </Button>
-            </Grid>
+    <>
+      {opportunity.pocDevelopmentInfo ? (
+        <Grid container direction="column" rowSpacing={2}>
+          <Grid item>
+            <InfoTable
+              title="Datos de desarrollo de POC"
+              titleVariant="h5"
+              rows={[
+                {
+                  title: "Fecha de inicio",
+                  content: new Date(opportunity.pocDevelopmentInfo.startDate).toLocaleDateString(),
+                },
+                {
+                  title: "Fecha de finalización",
+                  content: new Date(opportunity.pocDevelopmentInfo.endDate).toLocaleDateString(),
+                },
+                {
+                  title: "Ubicación",
+                  content: opportunity.pocDevelopmentInfo.location,
+                },
+                {
+                  title: "Criterios de éxito",
+                  content: opportunity.pocDevelopmentInfo.successCriteria,
+                },
+                {
+                  title: "Notas",
+                  content: opportunity.pocDevelopmentInfo.notes,
+                },
+              ]}
+            />
           </Grid>
-        </form>
-      </Grid>
-    </Grid>
+          <Grid item>
+            <LicenseTable
+              title="Licencias a probar"
+              rows={opportunity.pocDevelopmentInfo.packs.map((r) => ({
+                id: nanoid(),
+                totalPrice: r.pricePerUnit * r.amount,
+                ...r,
+              }))}
+            />
+          </Grid>
+        </Grid>
+      ) : (
+        <Grid
+          container
+          direction="column"
+          justifyContent="center"
+          sx={{ height: "inherit" }}
+          rowSpacing={2}
+        >
+          <Grid item>
+            <FormikLicenseBuilder
+              name="packs"
+              label="Licencias a probar"
+              formik={formik}
+            />
+          </Grid>
+          <Grid item>
+            <form onSubmit={formik.handleSubmit}>
+              <Grid container direction="column" rowSpacing={2}>
+                <Grid
+                  item
+                  container
+                  direction="row"
+                  columns={2}
+                  columnSpacing={2}
+                >
+                  <Grid item xs={1}>
+                    <FormikTextField
+                      name="startDate"
+                      label="Fecha de inicio"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
+                  </Grid>
+                  <Grid item xs={1}>
+                    <FormikTextField
+                      name="endDate"
+                      label="Fecha de finalización"
+                      formik={formik}
+                      validationSchema={validationSchema}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid item>
+                  <FormikTextField
+                    name="location"
+                    label="Ubicación"
+                    formik={formik}
+                    validationSchema={validationSchema}
+                  />
+                </Grid>
+                <Grid item>
+                  <FormikTextField
+                    name="successCriteria"
+                    label="Criterios de éxito"
+                    formik={formik}
+                    validationSchema={validationSchema}
+                  />
+                </Grid>
+                <Grid item>
+                  <FormikTextField
+                    name="notes"
+                    label="Notas"
+                    multiline
+                    rows={6}
+                    formik={formik}
+                    validationSchema={validationSchema}
+                  />
+                </Grid>
+                <Grid item>
+                  <Button
+                    fullWidth
+                    color="primary"
+                    variant="contained"
+                    type="submit"
+                  >
+                    Enviar
+                  </Button>
+                </Grid>
+              </Grid>
+            </form>
+          </Grid>
+        </Grid>
+      )}
+    </>
   );
 }

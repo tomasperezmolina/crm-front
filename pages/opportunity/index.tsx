@@ -191,13 +191,7 @@ function renderOpportunities(
 }
 
 const Opportunities: NextPage<OpportunitiesProps> = () => {
-  const dispatch = useAppDispatch();
   const opportunities = useAppSelector(selectOpportunities);
-  useEffect(() => {
-    if (opportunities.state === 'not-asked') {
-      dispatch(loadOpportunities());
-    }
-  }, [dispatch, opportunities]);
   const paddingX = 30;
   const router = useRouter();
   return (

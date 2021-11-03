@@ -1,10 +1,11 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import opportunitiesSlice from "./opportunities";
+import snackbarSlice from "./snackbar";
 
 
 export function makeStore() {
   return configureStore({
-    reducer: { opportunities: opportunitiesSlice },
+    reducer: { opportunities: opportunitiesSlice, snackbar: snackbarSlice },
   });
 }
 

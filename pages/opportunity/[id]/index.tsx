@@ -1,5 +1,5 @@
-import type { NextPage } from "next";
-import React, { useEffect } from "react";
+import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -14,8 +14,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  CircularProgress,
 } from "@mui/material";
-import { CancelOpportunityInfo, steps, StepType } from "../../../model/opportunity";
+import {
+  CancelOpportunityInfo,
+  OpportunityInDevelopment,
+  OpportunityInFirstMeeting,
+  OpportunityInfo,
+  OpportunityInNegotiation,
+  OpportunityInPOCDevelopment,
+  OpportunityInPOCImplementation,
+  OpportunityInProspect,
+  steps,
+  StepType,
+} from "../../../model/opportunity";
 import { stepTypeToSpanish } from "../../../spanish/opportunity";
 import {
   OpportunityProspect,
@@ -29,29 +41,42 @@ import { FormikTextField } from "../../../common/formik-fields";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { formikInitialValues } from "../../../common/formik-props";
+import { Identifiable } from "../../../model/base";
+import { useAppDispatch, useAppSelector } from "../../../state/dispatch";
+import {
+  completeOpportunity,
+  selectOpportunity,
+  sendOpportunityToDevelopment,
+  sendOpportunityToFirstMeeting,
+  sendOpportunityToNegotiation,
+  sendOpportunityToPOCDevelopment,
+  sendOpportunityToPOCImplementation,
+} from "../../../state/opportunities";
+import * as RemoteData from "../../../model/remote-data";
+import ErrorPage from "next/error";
+import { openSnackbar } from "../../../state/snackbar";
 
 interface OpportunityProps {
-  id?: string;
+  id: number;
 }
 
-const mockOpportunity: { step: StepType } = {
-  step: "Prospect",
-};
-
-const renderStage = (stage: StepType) => {
+const renderStage = (
+  opportunity: OpportunityInfo & Identifiable,
+  stage: StepType
+) => {
   switch (stage) {
     case "Prospect":
-      return <OpportunityProspect />;
+      return <OpportunityProspect opportunity={opportunity as OpportunityInProspect & Identifiable} />;
     case "First meeting":
-      return <OpportunityFirstMeeting />;
+      return <OpportunityFirstMeeting opportunity={opportunity as OpportunityInFirstMeeting & Identifiable} />;
     case "Development":
-      return <OpportunityDevelopment />;
+      return <OpportunityDevelopment opportunity={opportunity as OpportunityInDevelopment & Identifiable} />;
     case "POC development":
-      return <OpportunityPOCDevelopment />;
+      return <OpportunityPOCDevelopment opportunity={opportunity as OpportunityInPOCDevelopment & Identifiable} />;
     case "POC implementation":
-      return <OpportunityPOCImplementation />;
+      return <OpportunityPOCImplementation opportunity={opportunity as OpportunityInPOCImplementation & Identifiable} />;
     case "Negotiation":
-      return <OpportunityNegotiation />;
+      return <OpportunityNegotiation opportunity={opportunity as OpportunityInNegotiation & Identifiable} />;
   }
 };
 
@@ -73,7 +98,6 @@ const FinalizationExplanationDialog = ({
     formik.resetForm();
   };
 
-
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -85,7 +109,6 @@ const FinalizationExplanationDialog = ({
       handleClose();
     },
   });
-
 
   return (
     <Dialog open={open} onClose={handleClose}>
@@ -117,12 +140,14 @@ const FinalizationExplanationDialog = ({
   );
 };
 
-const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
-  const [activeStep, setActiveStep] = React.useState(
-    steps.indexOf(mockOpportunity.step)
-  );
-  const [opportunity, setOpportunity] = React.useState(mockOpportunity);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
+interface LoadedOpportunityProps {
+  opportunity: OpportunityInfo & Identifiable;
+}
+
+function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
+  const [activeStep, setActiveStep] = useState(steps.indexOf(opportunity.step));
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const dispatch = useAppDispatch();
 
   const handleCloseDialog = () => {
     setDialogOpen(false);
@@ -157,9 +182,32 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
     setActiveStep(step);
   };
 
-  const handleComplete = () => {
-    setOpportunity({ step: steps[steps.indexOf(opportunity.step) + 1] });
-    handleNext();
+  const handleComplete = async () => {
+    try {
+      switch (steps[activeStep]) {
+        case "Prospect":
+          await dispatch(sendOpportunityToFirstMeeting(opportunity.id));
+          break;
+        case "First meeting":
+          await dispatch(sendOpportunityToDevelopment(opportunity.id));
+          break;
+        case "Development":
+          await dispatch(sendOpportunityToPOCDevelopment(opportunity.id));
+          break;
+        case "POC development":
+          await dispatch(sendOpportunityToPOCImplementation(opportunity.id));
+          break;
+        case "POC implementation":
+          await dispatch(sendOpportunityToNegotiation(opportunity.id));
+          break;
+        case "Negotiation":
+          await dispatch(completeOpportunity(opportunity.id));
+          break;
+      }
+      handleNext();
+    } catch (e: any) {
+      dispatch(openSnackbar({ msg: e.message, type: "error" }));
+    }
   };
 
   const stepIsCompleted = (stepIndex: number) => {
@@ -171,7 +219,7 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
       <Box sx={{ height: "inherit", overflowY: "scroll" }}>
         <Container maxWidth="xl" sx={{ paddingTop: 2, paddingBottom: 4 }}>
           <Typography variant="h4" align="center" gutterBottom>
-            Oportunidad: Blablabal
+            Oportunidad: {opportunity.name}
           </Typography>
           <Box sx={{ width: "100%" }}>
             <Stepper nonLinear activeStep={activeStep}>
@@ -236,7 +284,7 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
                     {stepTypeToSpanish(steps[activeStep])}
                   </Typography>
                 </Grid>
-                <Grid item>{renderStage(steps[activeStep])}</Grid>
+                <Grid item>{renderStage(opportunity, steps[activeStep])}</Grid>
               </Grid>
             </Container>
           </Box>
@@ -248,10 +296,61 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
       />
     </>
   );
+}
+
+const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
+  const opportunity = useAppSelector(selectOpportunity(id));
+
+  return (
+    <>
+      {opportunity.state === "success" && (
+        <LoadedOpportunity opportunity={opportunity.value} />
+      )}
+      {opportunity.state === "error" && <ErrorPage statusCode={404} />}
+      {opportunity.state === "loading" && (
+        <Grid
+          container
+          height="100%"
+          direction="column"
+          justifyContent="center"
+          alignContent="center"
+        >
+          <Grid item>
+            <CircularProgress />
+          </Grid>
+        </Grid>
+      )}
+    </>
+  );
 };
 
-Opportunity.getInitialProps = async (ctx): Promise<OpportunityProps> => {
-  return { id: ctx.query.id as string };
+export const getStaticProps: GetStaticProps<OpportunityProps> = async (
+  context
+) => {
+  const rawId = context.params?.id as string;
+  if (!rawId) {
+    return {
+      notFound: true,
+    };
+  }
+  const parsed = parseInt(rawId);
+  if (isNaN(parsed)) {
+    return {
+      notFound: true,
+    };
+  }
+  return {
+    props: {
+      id: parsed,
+    },
+  };
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [],
+    fallback: "blocking",
+  };
 };
 
 export default Opportunity;

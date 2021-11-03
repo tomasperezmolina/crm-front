@@ -26,7 +26,13 @@ import { useFormik } from "formik";
 import { FormikSelectField, FormikTextField } from "./formik-fields";
 import { nanoid } from "nanoid";
 import { formikInitialValues } from "./formik-props";
-import { LicenseRow, LicenseType, licenseTypes, ProgramType, programTypes } from "../model/opportunity";
+import {
+  LicenseRow,
+  LicenseType,
+  licenseTypes,
+  ProgramType,
+  programTypes,
+} from "../model/opportunity";
 
 const validationSchema = yup.object({
   program: yup
@@ -50,13 +56,13 @@ function licensePrice(program: ProgramType, license: LicenseType) {
 type LicenseTableRow = LicenseRow & {
   id: string;
   totalPrice: number;
-}
+};
 
 function createLicenseRow(
   program: ProgramType,
   license: LicenseType,
   amount: number
-) : LicenseTableRow {
+): LicenseTableRow {
   const pricePerUnit = licensePrice(program, license);
   return {
     id: nanoid(),
@@ -193,7 +199,11 @@ export default function LicenseBuilder({
         </Grid>
       </Grid>
       <Grid xs={2} item container direction="column">
-        <EnhancedTable title={title} rows={rows} onDeleteRows={handleDeleteRows} />
+        <LicenseTable
+          title={title}
+          rows={rows}
+          onDeleteRows={handleDeleteRows}
+        />
       </Grid>
     </Grid>
   );
@@ -273,6 +283,7 @@ interface EnhancedTableHeadProps {
   order: Order;
   orderBy: string;
   rowCount: number;
+  disableSelect?: boolean;
 }
 
 function EnhancedTableHead({
@@ -282,6 +293,7 @@ function EnhancedTableHead({
   numSelected,
   rowCount,
   onRequestSort,
+  disableSelect,
 }: EnhancedTableHeadProps) {
   const createSortHandler =
     (property: SorteableKey) => (event: React.MouseEvent<unknown>) => {
@@ -292,13 +304,16 @@ function EnhancedTableHead({
     <TableHead>
       <TableRow>
         <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-          />
+          {!disableSelect && (
+            <Checkbox
+              color="primary"
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+            />
+          )}
         </TableCell>
+
         {headCells.map((headCell, idx) => (
           <TableCell
             key={headCell.id}
@@ -323,7 +338,7 @@ function EnhancedTableHead({
 interface EnhancedTableToolbarProps {
   title: string;
   numSelected: number;
-  onDelete: () => void;
+  onDelete?: () => void;
   totalPrice: number;
 }
 
@@ -393,10 +408,14 @@ type SorteableKey = keyof Omit<LicenseTableRow, "id">;
 interface EnhancedTableProps {
   title: string;
   rows: LicenseTableRow[];
-  onDeleteRows: (rowIds: readonly string[]) => void;
+  onDeleteRows?: (rowIds: readonly string[]) => void;
 }
 
-function EnhancedTable({ title, rows, onDeleteRows }: EnhancedTableProps) {
+export function LicenseTable({
+  title,
+  rows,
+  onDeleteRows,
+}: EnhancedTableProps) {
   const [order, setOrder] = React.useState<Order>("asc");
   const [orderBy, setOrderBy] = React.useState<SorteableKey>("program");
   const [selected, setSelected] = React.useState<readonly string[]>([]);
@@ -453,8 +472,10 @@ function EnhancedTable({ title, rows, onDeleteRows }: EnhancedTableProps) {
   };
 
   const handleDeleteSelected = () => {
-    onDeleteRows(selected);
-    setSelected([]);
+    if (onDeleteRows) {
+      onDeleteRows(selected);
+      setSelected([]);
+    }
   };
 
   const isSelected = (id: string) => selected.indexOf(id) !== -1;
@@ -481,6 +502,7 @@ function EnhancedTable({ title, rows, onDeleteRows }: EnhancedTableProps) {
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              disableSelect
             />
             <TableBody>
               {rows
@@ -494,7 +516,11 @@ function EnhancedTable({ title, rows, onDeleteRows }: EnhancedTableProps) {
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, row.id)}
+                      onClick={
+                        onDeleteRows &&
+                        ((event: React.MouseEvent<unknown>) =>
+                          handleClick(event, row.id))
+                      }
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
@@ -502,14 +528,17 @@ function EnhancedTable({ title, rows, onDeleteRows }: EnhancedTableProps) {
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox
-                          color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            "aria-labelledby": labelId,
-                          }}
-                        />
+                        {onDeleteRows && (
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            inputProps={{
+                              "aria-labelledby": labelId,
+                            }}
+                          />
+                        )}
                       </TableCell>
+
                       <TableCell
                         component="th"
                         id={labelId}

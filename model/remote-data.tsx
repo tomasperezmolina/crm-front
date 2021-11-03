@@ -43,3 +43,17 @@ export function loading<E, V>(): RemoteData<E, V> {
     state: "loading",
   };
 }
+
+export function map<E, V1, V2>(d: RemoteData<E,V1>, f: (v: V1) => V2): RemoteData<E, V2> {
+  if (d.state === 'success') {
+    return success(f(d.value));
+  }
+  return d;
+}
+
+export function andThen<E, V1, V2>(d: RemoteData<E,V1>, f: (v: V1) => RemoteData<E, V2>): RemoteData<E, V2> {
+  if (d.state === 'success') {
+    return f(d.value);
+  }
+  return d;
+}

@@ -4,7 +4,17 @@ import * as yup from "yup";
 import { useFormik } from "formik";
 import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
-import { DevelopmentInfo } from "../model/opportunity";
+import {
+  DevelopmentInfo,
+  OpportunityInDevelopment,
+} from "../model/opportunity";
+import { saveOpportunityDevelopmentInfo } from "../state/opportunities";
+import { openSnackbar } from "../state/snackbar";
+import { useAppDispatch } from "../state/dispatch";
+import { Identifiable } from "../model/base";
+import { InfoTable } from "../common/info-table";
+import { LicenseTable } from "../common/license-builder";
+import { nanoid } from "nanoid";
 
 const maxNotesLenght = 1000;
 
@@ -25,64 +35,116 @@ const validationSchema = yup.object({
     ),
 });
 
-export default function OpportunityDevelopment() {
+interface OpportunityDevelopmentProps {
+  opportunity: OpportunityInDevelopment & Identifiable;
+}
+
+export default function OpportunityDevelopment({
+  opportunity,
+}: OpportunityDevelopmentProps) {
+  const dispatch = useAppDispatch();
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
-    onSubmit: (values: DevelopmentInfo) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values: DevelopmentInfo) => {
+      try {
+        await dispatch(
+          saveOpportunityDevelopmentInfo({
+            id: opportunity.id,
+            info: values,
+          })
+        );
+      } catch (e: any) {
+        dispatch(openSnackbar({ msg: e.message, type: "error" }));
+      }
     },
   });
 
   return (
-    <Grid
-      container
-      direction="column"
-      rowSpacing={2}
-      justifyContent="center"
-      sx={{ height: "inherit" }}
-    >
-      <Grid item>
-        <FormikLicenseBuilder
-          name='packs'
-          label='Licencias'
-          formik={formik}
-        />
-      </Grid>
-      <Grid item>
-        <form onSubmit={formik.handleSubmit}>
-          <Grid container direction="column" rowSpacing={2}>
-            <Grid item>
-              <FormikTextField
-                name="principalArea"
-                label="Área principal"
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <FormikTextField
-                name="notes"
-                label="Notas"
-                multiline
-                rows={6}
-                formik={formik}
-                validationSchema={validationSchema}
-              />
-            </Grid>
-            <Grid item>
-              <Button
-                fullWidth
-                color="primary"
-                variant="contained"
-                type="submit"
-              >
-                Enviar
-              </Button>
-            </Grid>
+    <>
+      {opportunity.developmentInfo ? (
+        <Grid container direction="column" rowSpacing={2}>
+          <Grid item>
+            <InfoTable
+              title="Datos de desarrollo"
+              titleVariant="h5"
+              rows={[
+                {
+                  title: "Área principal",
+                  content: opportunity.developmentInfo.principalArea,
+                },
+                {
+                  title: "Notas",
+                  content: opportunity.developmentInfo.notes,
+                },
+              ]}
+            />
           </Grid>
-        </form>
-      </Grid>
-    </Grid>
+          <Grid item>
+            <LicenseTable
+              title="Licencias"
+              rows={opportunity.developmentInfo.packs.map((r) => ({
+                id: nanoid(),
+                totalPrice: r.pricePerUnit * r.amount,
+                ...r,
+              }))}
+            />
+          </Grid>
+        </Grid>
+      ) : (
+        <Grid
+          container
+          direction="column"
+          rowSpacing={2}
+          justifyContent="center"
+          sx={{ height: "inherit" }}
+        >
+          <Grid item>
+            <FormikLicenseBuilder
+              name="packs"
+              label="Licencias"
+              formik={formik}
+            />
+          </Grid>
+          <Grid item>
+            <form onSubmit={formik.handleSubmit}>
+              <Grid container direction="column" rowSpacing={2}>
+                <Grid item>
+                  <FormikTextField
+                    name="principalArea"
+                    label="Área principal"
+                    formik={formik}
+                    validationSchema={validationSchema}
+                  />
+                </Grid>
+                <Grid item>
+                  <FormikTextField
+                    name="notes"
+                    label="Notas"
+                    multiline
+                    rows={6}
+                    formik={formik}
+                    validationSchema={validationSchema}
+                  />
+                </Grid>
+                <Grid item>
+                  <Button
+                    fullWidth
+                    color="primary"
+                    variant="contained"
+                    type="submit"
+                  >
+                    Enviar
+                  </Button>
+                </Grid>
+              </Grid>
+            </form>
+          </Grid>
+        </Grid>
+      )}
+    </>
   );
 }
