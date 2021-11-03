@@ -26,15 +26,15 @@ export function InfoTable({ title, titleVariant, rows }: InfoTableProps) {
       </Typography>
       <Divider />
       {rows.map((v, idx) => (
-        <>
-          <Typography key={`${idx}-title`} variant="overline">
+        <div key={idx}>
+          <Typography variant="overline">
             {v.title}
           </Typography>
-          <Typography key={`${idx}-content`} variant="body1" gutterBottom>
+          <Typography variant="body1" gutterBottom>
             {v.content}
           </Typography>
-          <Divider key={`${idx}-divider`} />
-        </>
+          <Divider />
+        </div>
       ))}
     </>
   );

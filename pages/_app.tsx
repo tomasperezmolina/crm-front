@@ -6,6 +6,8 @@ import Navbar from "../common/navbar";
 
 import type { AppProps } from "next/app";
 import { Box } from "@mui/material";
+import { Provider } from "react-redux";
+import store from "../state/store";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -21,8 +23,10 @@ function MyApp({ Component, pageProps }: AppProps) {
         </header>
 
         <main>
-          <Box sx={{height: '100%', width: '100%'}}>
-            <Component {...pageProps} />
+          <Box sx={{ height: "100%", width: "100%" }}>
+            <Provider store={store}>
+              <Component {...pageProps} />
+            </Provider>
           </Box>
         </main>
 

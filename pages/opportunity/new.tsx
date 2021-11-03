@@ -1,12 +1,6 @@
 import type { NextPage } from "next";
 import React from "react";
-import {
-  Button,
-  Container,
-  Grid,
-  MenuItem,
-  Typography,
-} from "@mui/material";
+import { Button, Container, Grid, MenuItem, Typography } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import {
@@ -15,9 +9,23 @@ import {
   regionToSpanish,
 } from "../../spanish/company";
 import { useRouter } from "next/router";
-import { Form, FormikSelectField, FormikTextField } from "../../common/formik-fields";
-import {formikInitialValues} from "../../common/formik-props";
-import { companyTypes, industries, OpportunityInfo, regions } from "../../model/opportunity";
+import {
+  Form,
+  FormikSelectField,
+  FormikTextField,
+} from "../../common/formik-fields";
+import { formikInitialValues } from "../../common/formik-props";
+import {
+  CompanyType,
+  companyTypes,
+  industries,
+  Industry,
+  OpportunityInfo,
+  Region,
+  regions,
+} from "../../model/opportunity";
+import { useAppDispatch } from "../../state/dispatch";
+import { saveOpportunity } from "../../state/opportunities";
 
 const maxNotesLenght = 1000;
 
@@ -48,17 +56,34 @@ const validationSchema = yup.object({
     ),
 });
 
-type NewOpportunityForm = Form<Omit<OpportunityInfo, "step">>;
+export type NewOpportunityData = Omit<OpportunityInfo, "step">;
+
+type NewOpportunityForm = Form<NewOpportunityData>;
+
+function formToData(form: NewOpportunityForm): NewOpportunityData {
+  return {
+    name: form.name,
+    webpage: form.webpage,
+    notes: form.notes,
+    industry: form.industry as Industry,
+    companyType: form.companyType as CompanyType,
+    region: form.region as Region,
+  };
+}
 
 interface NewOpportunityProps {}
 
 const NewOpportunity: NextPage<NewOpportunityProps> = () => {
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
     onSubmit: (values: NewOpportunityForm) => {
-      alert(JSON.stringify(values, null, 2));
+      dispatch(saveOpportunity(formToData(values)));
       router.push("/opportunity/0");
     },
   });

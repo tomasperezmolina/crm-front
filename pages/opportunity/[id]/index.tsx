@@ -68,6 +68,12 @@ const FinalizationExplanationDialog = ({
   open,
   onClose,
 }: CancelExplanationDialogProps) => {
+  const handleClose = () => {
+    onClose();
+    formik.resetForm();
+  };
+
+
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -76,18 +82,13 @@ const FinalizationExplanationDialog = ({
     validationSchema: validationSchema,
     onSubmit: (values: CancelOpportunityInfo) => {
       alert(JSON.stringify(values, null, 2));
-      onClose();
+      handleClose();
     },
   });
 
-  useEffect(() => {
-    if (!open) {
-      formik.resetForm();
-    }
-  }, [open, formik]);
 
   return (
-    <Dialog open={open}>
+    <Dialog open={open} onClose={handleClose}>
       <form onSubmit={formik.handleSubmit}>
         <DialogTitle>Finalizar oportunidad</DialogTitle>
         <DialogContent>
@@ -106,7 +107,7 @@ const FinalizationExplanationDialog = ({
           />
         </DialogContent>
         <DialogActions>
-          <Button type="button" onClick={onClose}>
+          <Button type="button" onClick={handleClose}>
             Cancelar
           </Button>
           <Button type="submit">Enviar</Button>
