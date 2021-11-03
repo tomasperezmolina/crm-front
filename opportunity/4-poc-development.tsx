@@ -27,9 +27,16 @@ const validationSchema = yup.object({
     .array()
     .min(1, "Se requiere por lo menos una licencia")
     .required("Se requiere una lista de licencias a probar"),
-  startDate: yup.date().required("Se requiere una fecha de inicio de la POC"),
+  startDate: yup
+    .date()
+    .min(new Date(), "La fecha de inicio debe ser en el futuro")
+    .required("Se requiere una fecha de inicio de la POC"),
   endDate: yup
     .date()
+    .min(
+      yup.ref("startDate"),
+      "La fecha de finalización debe ser después de la fecha de inicio"
+    )
     .required("Se requiere una fecha de finalización de la POC"),
   location: yup.string().required("Se requiere ubicación para la POC"),
   successCriteria: yup
@@ -83,11 +90,15 @@ export default function OpportunityPOCDevelopment({
               rows={[
                 {
                   title: "Fecha de inicio",
-                  content: new Date(opportunity.pocDevelopmentInfo.startDate).toLocaleDateString(),
+                  content: new Date(
+                    opportunity.pocDevelopmentInfo.startDate
+                  ).toLocaleDateString(),
                 },
                 {
                   title: "Fecha de finalización",
-                  content: new Date(opportunity.pocDevelopmentInfo.endDate).toLocaleDateString(),
+                  content: new Date(
+                    opportunity.pocDevelopmentInfo.endDate
+                  ).toLocaleDateString(),
                 },
                 {
                   title: "Ubicación",

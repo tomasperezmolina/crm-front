@@ -22,7 +22,10 @@ import { nanoid } from "nanoid";
 
 const validationSchema = yup.object({
   address: yup.string().required("Se requiere una dirección"),
-  cuit: yup.string().required("Se require un CUIT"),
+  cuit: yup
+    .string()
+    .matches(/\b(20|23|24|27|30|33|34)(\D)?[0-9]{8}(\D)?[0-9]/, "CUIT inválido")
+    .required("Se require un CUIT"),
   socialReason: yup.string().required("Se require una razón social"),
   packs: yup
     .array()

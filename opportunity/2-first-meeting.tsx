@@ -23,6 +23,7 @@ const validationSchema = yup.object({
   locations: yup.string().required("Se require una lista de ubicaciones"),
   nextMeetingDate: yup
     .date()
+    .min(new Date(), "La fecha de próxima reunión debe ser en el futuro")
     .required("Se require una fecha para la próxima reunión"),
   notes: yup
     .string()
@@ -37,6 +38,7 @@ const validationSchema = yup.object({
   problem: yup.string().required("Se require una descripción del problema"),
   projectDate: yup
     .date()
+    .min(new Date(), "La fecha de proyecto debe ser en el futuro")
     .required("Se require una fecha aproximada del proyecto"),
   projectDuration: yup
     .string()
