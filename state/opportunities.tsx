@@ -256,7 +256,6 @@ const opportunitiesSlice = createSlice({
         state.list = RemoteData.success(action.payload);
       })
       .addCase(saveOpportunity.fulfilled, (state, action) => {
-        console.log(action);
         if (state.list.state === "success") {
           state.list = RemoteData.success([
             ...state.list.value,

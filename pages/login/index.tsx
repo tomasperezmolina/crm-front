@@ -1,15 +1,11 @@
-import type { NextPage } from "next";
+import type { GetServerSideProps, NextPage } from "next";
 import React from "react";
-import {
-  Button,
-  Container,
-  Grid,
-  Typography,
-} from "@mui/material";
+import { Button, Container, Grid, Typography } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
-import {FormikTextField}  from "../../common/formik-fields";
-import {formikInitialValues} from "../../common/formik-props";
+import { FormikTextField } from "../../common/formik-fields";
+import { formikInitialValues } from "../../common/formik-props";
+import { getCsrfToken, signIn } from "next-auth/react";
 
 const validationSchema = yup.object({
   email: yup
@@ -18,18 +14,23 @@ const validationSchema = yup.object({
     .required("Se requiere un email"),
   password: yup
     .string()
-    .min(8, "La contraseña debe ser de 8 caracteres o más")
+    // .min(8, "La contraseña debe ser de 8 caracteres o más")
     .required("Se requiere una contraseña"),
 });
 
-interface LoginProps {}
+interface LoginProps {
+  callbackUrl?: string;
+}
 
-const Login: NextPage<LoginProps> = () => {
+const Login: NextPage<LoginProps> = ({ callbackUrl }) => {
   const formik = useFormik({
-    initialValues: formikInitialValues(validationSchema.fields, validationSchema),
+    initialValues: formikInitialValues(
+      validationSchema.fields,
+      validationSchema
+    ),
     validationSchema: validationSchema,
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: async (values) => {
+      signIn("credentials", { email: values.email, password: values.password, callbackUrl});
     },
   });
 
@@ -60,7 +61,7 @@ const Login: NextPage<LoginProps> = () => {
               <Grid item>
                 <FormikTextField
                   name="password"
-                  type='password'
+                  type="password"
                   label="Contraseña"
                   formik={formik}
                   validationSchema={validationSchema}
@@ -83,5 +84,16 @@ const Login: NextPage<LoginProps> = () => {
     </Container>
   );
 };
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  return {
+    props: {
+      callbackUrl: context.query?.callbackUrl || null,
+    },
+  };
+};
+
+// @ts-ignore
+Login.public = true;
 
 export default Login;

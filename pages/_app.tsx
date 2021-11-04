@@ -11,10 +11,13 @@ import store from "../state/store";
 import { useAppDispatch, useAppSelector } from "../state/dispatch";
 import { closeSnackbar, selectSnackbar } from "../state/snackbar";
 import { loadOpportunities, selectOpportunities } from "../state/opportunities";
+import { SessionProvider } from "next-auth/react";
+import { Session } from "next-auth";
+import AuthGuard from "../common/auth-guard";
 
-function WrappedApp({ Component, pageProps }: AppProps) {
+function WrappedApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   const dispatch = useAppDispatch();
-  const {open, message, type} = useAppSelector(selectSnackbar);
+  const { open, message, type } = useAppSelector(selectSnackbar);
   const handleClose = (_event?: React.SyntheticEvent, reason?: string) => {
     if (reason === "clickaway") {
       return;
@@ -23,7 +26,7 @@ function WrappedApp({ Component, pageProps }: AppProps) {
   };
   const opportunities = useAppSelector(selectOpportunities);
   useEffect(() => {
-    if (opportunities.state === 'not-asked') {
+    if (opportunities.state === "not-asked") {
       dispatch(loadOpportunities());
     }
   }, [dispatch, opportunities]);
@@ -42,7 +45,14 @@ function WrappedApp({ Component, pageProps }: AppProps) {
 
         <main>
           <Box sx={{ height: "100%", width: "100%" }}>
-            <Component {...pageProps} />
+            {/*@ts-ignore*/}
+            {Component.public ? (
+              <Component {...pageProps} />
+            ) : (
+              <AuthGuard>
+                <Component {...pageProps} />
+              </AuthGuard>
+            )}
             <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
               <Alert
                 onClose={handleClose}
@@ -123,10 +133,12 @@ function WrappedApp({ Component, pageProps }: AppProps) {
   );
 }
 
-function MyApp(props: AppProps) {
+function MyApp(props: AppProps<{ session: Session }>) {
   return (
     <Provider store={store}>
-      <WrappedApp {...props}/>
+      <SessionProvider session={props.pageProps.session}>
+        <WrappedApp {...props} />
+      </SessionProvider>
     </Provider>
   );
 }

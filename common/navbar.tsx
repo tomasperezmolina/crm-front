@@ -8,11 +8,16 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/router";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Navbar() {
+  const { data: session } = useSession({required: false});
+  useEffect(() => {
+    console.log(session);
+  }, [session]);
   const router = useRouter();
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
   const open = Boolean(anchor);
@@ -23,38 +28,39 @@ export default function Navbar() {
     setAnchor(null);
   };
   const handleLoginClick = () => {
-    router.push('/login');
+    signIn();
   };
   const handleLogoutClick = () => {
-    handleClose();
-    router.push('/');
+    signOut({callbackUrl: '/'});
   };
   const handleOpportunityClick = () => {
     handleClose();
-    router.push('/opportunity');
-  }
+    router.push("/opportunity");
+  };
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
         <Toolbar variant="dense">
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            aria-expanded={open ? 'true' : undefined}
-            onClick={handleClick}
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
+          {session && (
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              aria-expanded={open ? "true" : undefined}
+              onClick={handleClick}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
           <Menu
             id="basic-menu"
             anchorEl={anchor}
             open={open}
             onClose={handleClose}
             MenuListProps={{
-              'aria-labelledby': 'basic-button',
+              "aria-labelledby": "basic-button",
             }}
           >
             <MenuItem onClick={handleOpportunityClick}>Oportunidades</MenuItem>
@@ -63,7 +69,11 @@ export default function Navbar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             /CRM/
           </Typography>
-          <Button color="inherit" onClick={handleLoginClick}>Login</Button>
+          {(!session && router.pathname !== '/login') && (
+            <Button color="inherit" onClick={handleLoginClick}>
+              Login
+            </Button>
+          )}
         </Toolbar>
       </AppBar>
     </Box>
