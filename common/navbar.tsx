@@ -63,7 +63,7 @@ export default function Navbar() {
             }}
           >
             <MenuItem onClick={handleOpportunityClick}>Oportunidades</MenuItem>
-            <MenuItem onClick={handleReset}>Borrar datos</MenuItem>
+            <MenuItem onClick={handleReset}>Borrar datos (DEBUG)</MenuItem>
             <MenuItem onClick={handleLogoutClick}>Cerrar sesión</MenuItem>
           </Menu>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>

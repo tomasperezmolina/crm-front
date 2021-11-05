@@ -1,19 +1,32 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { INVALID_SOURCE_STEP, OPPORTUNITY_NOT_FOUND } from "../common/error-messages";
+import moment from "moment";
+import {
+  INVALID_SOURCE_STEP,
+  OPPORTUNITY_NOT_FOUND,
+} from "../common/error-messages";
 import { Identifiable } from "../model/base";
 import {
   BaseOpportunityInfo,
   Contact,
   DevelopmentInfo,
   FirstMeetingInfo,
+  LicenseType,
   NegotiationInfo,
   OpportunityCompleted,
+  OpportunityInDevelopment,
+  OpportunityInFirstMeeting,
   OpportunityInfo,
+  OpportunityInNegotiation,
+  OpportunityInPOCDevelopment,
+  OpportunityInPOCImplementation,
+  OpportunityInProspect,
   POCDevelopmentInfo,
   POCImplementationInfo,
+  ProgramType,
   steps,
   StepType,
 } from "../model/opportunity";
+import { licensePrice } from "../model/pricing";
 import * as RemoteData from "../model/remote-data";
 import { NewOpportunityData } from "../pages/opportunity/new";
 
@@ -27,17 +40,133 @@ const initialState: OpportunitiesState = {
   list: RemoteData.notAsked(),
 };
 
-const mockCompany = (id: number): OpportunityInfo & Identifiable => ({
-  id,
-  name: "MOCK S.A.",
-  companyType: "Private",
-  region: "North America",
-  industry: "Manufacture",
-  webpage: "https://formik.org/docs/api/field",
-  step: "Prospect",
-  notes:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-});
+function generateId() {
+  return Math.floor(Math.random() * 10000);
+}
+
+function mockProspectCompany(
+  name: string
+): OpportunityInProspect & Identifiable {
+  return {
+    id: generateId(),
+    name,
+    companyType: "Private",
+    region: "North America",
+    industry: "Manufacture",
+    webpage: "https://formik.org/docs/api/field",
+    step: "Prospect",
+    notes:
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+  };
+}
+
+function mockFirstMeetingCompany(
+  name: string
+): OpportunityInFirstMeeting & Identifiable {
+  return {
+    ...mockProspectCompany(name),
+    step: "First meeting",
+    contact: {
+      name: "Pedro",
+      surname: "Perez",
+      email: "perez@mail.com",
+      linkedin: `https://www.linkedin.com/in/pedro-perez-0a${generateId()}/`,
+      phone: "01161513562",
+    },
+  };
+}
+
+function mockDevelopmentCompany(
+  name: string
+): OpportunityInDevelopment & Identifiable {
+  return {
+    ...mockFirstMeetingCompany(name),
+    step: "Development",
+    firstMeetingInfo: {
+      problem: "Un problema complicado",
+      budgetStatus:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+      employeeAmount: 200,
+      locations: "Buenos Aires, Santa Fe, CABA",
+      nextMeetingDate: moment().add(1, "week").toISOString(),
+      projectDate: moment().add(3, "months").toISOString(),
+      notes:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+      projectOwner: "Marty McFly",
+      othersInvolved: "Jeff Bezos, Elon Musk",
+      projectDuration: "Q4 2022",
+    },
+  };
+}
+
+function mockPack(program: ProgramType, license: LicenseType, amount: number) {
+  return {
+    license,
+    program,
+    pricePerUnit: licensePrice(program, license),
+    amount: amount,
+  };
+}
+
+function mockPOCDevelopmentCompany(
+  name: string
+): OpportunityInPOCDevelopment & Identifiable {
+  return {
+    ...mockDevelopmentCompany(name),
+    step: "POC development",
+    developmentInfo: {
+      principalArea: "Recursos Humanos",
+      notes:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+      packs: [
+        mockPack("Excel", "Home", 20),
+        mockPack("Word", "Pro", 10),
+        mockPack("Excel", "Pro", 50),
+        mockPack("Outlook", "Home", 80),
+      ],
+    },
+  };
+}
+
+function mockPOCImplementationCompany(
+  name: string
+): OpportunityInPOCImplementation & Identifiable {
+  return {
+    ...mockPOCDevelopmentCompany(name),
+    step: "POC implementation",
+    pocDevelopmentInfo: {
+      packs: [
+        mockPack("Excel", "Home", 5),
+        mockPack("Excel", "Pro", 2),
+        mockPack("Word", "Home", 10),
+        mockPack("Word", "Pro", 5),
+        mockPack("Outlook", "Home", 2),
+      ],
+      startDate: moment().add(3, "weeks").toISOString(),
+      endDate: moment().add(3, "weeks").add(1, "month").toISOString(),
+      location: "San Martín 2405, Capital Federal",
+      successCriteria:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+      notes:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+    },
+  };
+}
+
+function mockNegotiationCompany(
+  name: string
+): OpportunityInNegotiation & Identifiable {
+  return {
+    ...mockPOCImplementationCompany(name),
+    step: "Negotiation",
+    pocImplementationInfo: {
+      uxRating: 4,
+      processRating: 5,
+      notes:
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
+    },
+  };
+}
 
 export const loadOpportunities = createAsyncThunk(
   "opportunities/loadOpportunities",
@@ -45,7 +174,34 @@ export const loadOpportunities = createAsyncThunk(
     await new Promise<void>((resolve) => {
       setTimeout(() => resolve(), 1000);
     });
-    return [mockCompany(1), mockCompany(2), mockCompany(3), mockCompany(4)];
+    return [
+      mockProspectCompany("Danone"),
+      mockProspectCompany("Accenture"),
+      mockProspectCompany("Serenísima"),
+      mockProspectCompany("Bayer"),
+      mockFirstMeetingCompany("Freddo"),
+      mockFirstMeetingCompany("Salesforce"),
+      mockFirstMeetingCompany("Drixit"),
+      mockDevelopmentCompany("Tesla"),
+      mockDevelopmentCompany("Microsoft"),
+      mockDevelopmentCompany("Apple"),
+      mockDevelopmentCompany("Dell"),
+      mockDevelopmentCompany("Coca-Cola"),
+      mockDevelopmentCompany("ASUS"),
+      mockPOCDevelopmentCompany("Discord"),
+      mockPOCDevelopmentCompany("Unilever"),
+      mockPOCImplementationCompany("Logitech"),
+      mockPOCImplementationCompany("PepsiCo"),
+      mockPOCImplementationCompany("Nike"),
+      mockPOCImplementationCompany("ZARA"),
+      mockPOCImplementationCompany("Yamaha"),
+      mockPOCImplementationCompany("Yamaha"),
+      mockNegotiationCompany("Aukey"),
+      mockNegotiationCompany("GUESS"),
+      mockNegotiationCompany("LG"),
+      mockNegotiationCompany("Adidas"),
+      mockNegotiationCompany("Blizzard"),
+    ];
   }
 );
 
@@ -57,7 +213,7 @@ export const saveOpportunity = createAsyncThunk<
     setTimeout(() => resolve(), 1000);
   });
   return {
-    id: Math.floor(Math.random() * 10000),
+    id: generateId(),
     step: "Prospect",
     ...opportunity,
   };
@@ -111,7 +267,8 @@ function stateTransition(
     if (o.step !== steps[steps.indexOf(target) - 1])
       throw new Error(INVALID_SOURCE_STEP);
     // @ts-ignore
-    if (!o[elementKey]) throw new Error(`${o.step.toUpperCase().replace(" ", "_")}_DATA_MISSING`);
+    if (!o[elementKey])
+      throw new Error(`${o.step.toUpperCase().replace(" ", "_")}_DATA_MISSING`);
     const newOpportunities = [...os];
     // @ts-ignore
     newOpportunities[indexOf] = {
