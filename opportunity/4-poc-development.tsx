@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -19,6 +19,7 @@ import { Identifiable } from "../model/base";
 import { InfoTable } from "../common/info-table";
 import { LicenseTable } from "../common/license-builder";
 import { nanoid } from "nanoid";
+import { dateToARGFormat, dateToInputFormat, dateToISOStringArgentina } from "../common/parse-date";
 
 const maxNotesLenght = 1000;
 
@@ -55,10 +56,27 @@ interface OpportunityPOCDevelopmentProps {
   opportunity: OpportunityInPOCDevelopment & Identifiable;
 }
 
+function formToInfo(form: POCDevelopmentInfo): POCDevelopmentInfo {
+  return {
+    ...form,
+    startDate: dateToISOStringArgentina(form.startDate),
+    endDate: dateToISOStringArgentina(form.endDate),
+  }
+}
+
+function infoToForm(info: POCDevelopmentInfo): POCDevelopmentInfo {
+  return {
+    ...info,
+    startDate: dateToInputFormat(info.startDate),
+    endDate: dateToInputFormat(info.endDate),
+  }
+}
+
 export default function OpportunityPOCDevelopment({
   opportunity,
 }: OpportunityPOCDevelopmentProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -70,18 +88,24 @@ export default function OpportunityPOCDevelopment({
         await dispatch(
           saveOpportunityPOCDevelopmentInfo({
             id: opportunity.id,
-            info: values,
+            info: formToInfo(values),
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(infoToForm(opportunity.pocDevelopmentInfo!));
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.pocDevelopmentInfo ? (
+      {opportunity.pocDevelopmentInfo && !editing ? (
         <Grid container direction="column" rowSpacing={2}>
           <Grid item>
             <InfoTable
@@ -90,15 +114,15 @@ export default function OpportunityPOCDevelopment({
               rows={[
                 {
                   title: "Fecha de inicio",
-                  content: new Date(
+                  content: dateToARGFormat(
                     opportunity.pocDevelopmentInfo.startDate
-                  ).toLocaleDateString(),
+                  ),
                 },
                 {
                   title: "Fecha de finalización",
-                  content: new Date(
+                  content: dateToARGFormat(
                     opportunity.pocDevelopmentInfo.endDate
-                  ).toLocaleDateString(),
+                  ),
                 },
                 {
                   title: "Ubicación",
@@ -113,6 +137,7 @@ export default function OpportunityPOCDevelopment({
                   content: opportunity.pocDevelopmentInfo.notes,
                 },
               ]}
+              onEdit={handleEdit}
             />
           </Grid>
           <Grid item>

@@ -183,6 +183,7 @@ function mockCompletedCompany(
       paymentMethod: "Transferencia",
       paymentTerms: "24 cuotas",
       packs: previousData.developmentInfo.packs,
+      contractFilename: "contrato.pdf",
     },
   };
 }
@@ -240,12 +241,12 @@ export const loadOpportunities = createAsyncThunk(
       mockCompletedCompany("Penguin"),
       mockCompletedCompany("Levy's"),
       mockCompletedCompany("CASIO"),
-      mockCancelOpportunity(mockDevelopmentCompany('NOKIA')),
-      mockCancelOpportunity(mockDevelopmentCompany('BlackBerry')),
-      mockCancelOpportunity(mockPOCDevelopmentCompany('Timberland')),
-      mockCancelOpportunity(mockProspectCompany('Guaymallén')),
-      mockCancelOpportunity(mockPOCImplementationCompany('Disney')),
-      mockCancelOpportunity(mockFirstMeetingCompany('General Motors')),
+      mockCancelOpportunity(mockDevelopmentCompany("NOKIA")),
+      mockCancelOpportunity(mockDevelopmentCompany("BlackBerry")),
+      mockCancelOpportunity(mockPOCDevelopmentCompany("Timberland")),
+      mockCancelOpportunity(mockProspectCompany("Guaymallén")),
+      mockCancelOpportunity(mockPOCImplementationCompany("Disney")),
+      mockCancelOpportunity(mockFirstMeetingCompany("General Motors")),
     ];
   }
 );

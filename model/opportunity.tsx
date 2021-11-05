@@ -175,10 +175,7 @@ export interface NegotiationInfo {
   packs: LicenseRow[];
   paymentMethod: string;
   paymentTerms: string;
-  contract?: {
-    filename: string;
-    file: File;
-  };
+  contractFilename: string;
 }
 
 export interface CancelOpportunityInfo {

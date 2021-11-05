@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -8,7 +8,7 @@ import { FirstMeetingInfo, OpportunityInFirstMeeting } from "../model/opportunit
 import { useAppDispatch } from "../state/dispatch";
 import { saveOpportunityFirstMeetingInfo } from "../state/opportunities";
 import { openSnackbar } from "../state/snackbar";
-import { dateToISOStringArgentina } from "../common/parse-date";
+import { dateToARGFormat, dateToInputFormat, dateToISOStringArgentina } from "../common/parse-date";
 import { Identifiable } from "../model/base";
 import { InfoTable } from "../common/info-table";
 
@@ -50,16 +50,19 @@ const validationSchema = yup.object({
 
 function formToInfo(form: Form<FirstMeetingInfo>): FirstMeetingInfo {
   return {
-    budgetStatus: form.budgetStatus,
+    ...form,
     employeeAmount: parseInt(form.employeeAmount),
-    locations: form.locations,
     nextMeetingDate: dateToISOStringArgentina(form.nextMeetingDate),
-    notes: form.notes,
-    othersInvolved: form.othersInvolved,
-    problem: form.problem,
     projectDate: dateToISOStringArgentina(form.projectDate),
-    projectDuration: form.projectDuration,
-    projectOwner: form.projectOwner,
+  };
+}
+
+function infoToForm(info: FirstMeetingInfo): Form<FirstMeetingInfo> {
+  return {
+    ...info,
+    employeeAmount: `${info.employeeAmount}`,
+    nextMeetingDate: dateToInputFormat(info.nextMeetingDate),
+    projectDate: dateToInputFormat(info.projectDate),
   };
 }
 
@@ -71,6 +74,7 @@ export default function OpportunityFirstMeeting({
   opportunity,
 }: OpportunityFirstMeetingProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -85,15 +89,21 @@ export default function OpportunityFirstMeeting({
             info: formToInfo(values),
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(infoToForm(opportunity.firstMeetingInfo!));
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.firstMeetingInfo ? (
+      {opportunity.firstMeetingInfo && !editing ? (
         <InfoTable
           title="Datos de primera reunión"
           titleVariant="h5"
@@ -108,7 +118,7 @@ export default function OpportunityFirstMeeting({
             },
             {
               title: "Próxima reunión",
-              content: new Date(opportunity.firstMeetingInfo.nextMeetingDate).toLocaleDateString(),
+              content: dateToARGFormat(opportunity.firstMeetingInfo.nextMeetingDate),
             },
             {
               title: "Estado del presupuesto",
@@ -128,13 +138,14 @@ export default function OpportunityFirstMeeting({
             },
             {
               title: "Fecha del proyecto",
-              content: new Date(opportunity.firstMeetingInfo.projectDate).toLocaleDateString(),
+              content: dateToARGFormat(opportunity.firstMeetingInfo.projectDate),
             },
             {
               title: "Duración del proyecto",
               content: opportunity.firstMeetingInfo.projectDuration,
             },
           ]}
+          onEdit={handleEdit}
         />
       ) : (
         <Grid

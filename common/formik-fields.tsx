@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  CircularProgress,
   FormControl,
   FormHelperText,
   Grid,
@@ -21,6 +22,7 @@ import {
 } from "./formik-props";
 import LicenseBuilder from "./license-builder";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { nanoid } from "nanoid";
 
 interface FormikFieldProps {
   name: string;
@@ -33,15 +35,19 @@ interface WithChildrenProps {
   children: React.ReactNode;
 }
 
-function ErrorBox({ children }: WithChildrenProps) {
+interface ErrorBoxProps extends WithChildrenProps {
+  extraHeight?: number;
+}
+
+function ErrorBox({ children, extraHeight }: ErrorBoxProps) {
   const { height, ref } = useResizeDetector();
   const [minHeight, setMinHeight] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     if (height && height !== minHeight) {
-      setMinHeight(height + 25);
+      setMinHeight(height + (extraHeight ?? 25));
     }
-  }, [minHeight, height]);
+  }, [minHeight, height, extraHeight]);
   return (
     <Box ref={ref} style={{ minHeight }}>
       {children}
@@ -106,7 +112,11 @@ export function FormikLicenseBuilder({
     <ErrorBox>
       <LicenseBuilder
         title={label}
-        value={formik.values[name]}
+        value={formik.values[name].map((r: any) => ({
+          id: nanoid(),
+          totalPrice: r.pricePerUnit * r.amount,
+          ...r,
+        }))}
         onChange={(rows) => formik.setFieldValue(name, rows, true)}
       />
       {helperText && (
@@ -130,7 +140,10 @@ export function FormikRating({
     <ErrorBox>
       <Grid container direction="column" alignItems="center">
         <Grid item>
-          <InputLabel id={labelId}>{label}{required && " *"}</InputLabel>
+          <InputLabel id={labelId}>
+            {label}
+            {required && " *"}
+          </InputLabel>
         </Grid>
         <Grid item>
           <Rating
@@ -154,21 +167,27 @@ export function FormikRating({
   );
 }
 
+type FormikFileInputProps = FormikFieldProps & {
+  onUpload: (file: { filename: string; file: File }) => Promise<void>;
+};
+
 export function FormikFileInput({
   name,
   label,
   formik,
   validationSchema,
-}: FormikFieldProps) {
+  onUpload,
+}: FormikFileInputProps) {
   const error = formik.touched[name] && Boolean(formik.errors[name]);
   const helperText = formik.touched[name] && formik.errors[name];
   const labelId = `${name}-label`;
   const handleDelete = () => {
     formik.setFieldValue(name, "", true);
   };
+  const [uploading, setUploading] = useState(false);
   const required = isRequiredField(validationSchema, name);
   return (
-    <ErrorBox>
+    <ErrorBox extraHeight={50}>
       <Grid container direction="column" rowSpacing={1}>
         <Grid item>
           <InputLabel id={labelId}>
@@ -176,21 +195,35 @@ export function FormikFileInput({
             {required && " *"}
           </InputLabel>
         </Grid>
-        <Grid item container direction="row" columnSpacing={2}>
+        <Grid
+          item
+          container
+          direction="row"
+          columnSpacing={2}
+          alignItems="center"
+          sx={{minHeight: 50}}
+        >
           <Grid item>
             <input
               style={{ display: "none" }}
               id={name}
               type="file"
-              onChange={(event) => {
-                const fileList = event.target.files;
-                if (fileList) {
-                  formik.setFieldValue(
-                    name,
-                    { filename: fileList[0].name, file: fileList[0] },
-                    true
-                  );
+              onChange={async (event) => {
+                setUploading(true);
+                try {
+                  const fileList = event.target.files;
+                  if (fileList) {
+                    const file = {
+                      filename: fileList[0].name,
+                      file: fileList[0],
+                    };
+                    await onUpload(file);
+                    formik.setFieldValue(name, file.filename, true);
+                  }
+                } catch (e) {
+                  console.error(e);
                 }
+                setUploading(false);
               }}
             />
             <label htmlFor={name}>
@@ -204,14 +237,21 @@ export function FormikFileInput({
               </Button>
             </label>
           </Grid>
-          <Grid item>
-            <Typography>{formik.values[name].filename}</Typography>
-          </Grid>
-          {formik.values[name] && (
+          {!uploading && formik.values[name] && (
+            <>
+              <Grid item>
+                <Typography>{formik.values[name]}</Typography>
+              </Grid>
+              <Grid item>
+                <IconButton onClick={handleDelete}>
+                  <DeleteIcon />
+                </IconButton>
+              </Grid>
+            </>
+          )}
+          {uploading && (
             <Grid item>
-              <IconButton onClick={handleDelete}>
-                <DeleteIcon />
-              </IconButton>
+              <CircularProgress size={25} />
             </Grid>
           )}
         </Grid>
@@ -227,4 +267,4 @@ export function FormikFileInput({
 
 export type Form<T> = {
   [Field in keyof T]: string;
-}
+};

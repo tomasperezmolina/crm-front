@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -33,7 +33,7 @@ const validationSchema = yup.object({
     .required("Se requiere una lista de licencias a probar"),
   paymentMethod: yup.string().required("Se require un método de pago"),
   paymentTerms: yup.string().required("Se require términos de pago"),
-  contract: yup.object().required("Se require un contrato"),
+  contractFilename: yup.string().required("Se require un contrato"),
 });
 
 interface OpportunityNegotiationProps {
@@ -44,6 +44,7 @@ export default function OpportunityNegotiation({
   opportunity,
 }: OpportunityNegotiationProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -58,15 +59,21 @@ export default function OpportunityNegotiation({
             info: values,
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(opportunity.negotiationInfo!);
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.negotiationInfo ? (
+      {opportunity.negotiationInfo && !editing ? (
         <Grid container direction="column" rowSpacing={2}>
           <Grid item>
             <InfoTable
@@ -93,7 +100,12 @@ export default function OpportunityNegotiation({
                   title: "Términos de pago",
                   content: opportunity.negotiationInfo.paymentTerms,
                 },
+                {
+                  title: "Contrato",
+                  content: opportunity.negotiationInfo.contractFilename,
+                },
               ]}
+              onEdit={handleEdit}
             />
           </Grid>
           <Grid item>
@@ -167,10 +179,15 @@ export default function OpportunityNegotiation({
                 </Grid>
                 <Grid item>
                   <FormikFileInput
-                    name="contract"
+                    name="contractFilename"
                     label="Contrato"
                     formik={formik}
                     validationSchema={validationSchema}
+                    onUpload={() =>
+                      new Promise<void>((resolve) => {
+                        setTimeout(() => resolve(), 1000);
+                      })
+                    }
                   />
                 </Grid>
                 <Grid item>

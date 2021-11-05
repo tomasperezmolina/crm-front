@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -43,6 +43,14 @@ function formToInfo(form: Form<POCImplementationInfo>): POCImplementationInfo {
   };
 }
 
+function infoToForm(info: POCImplementationInfo): Form<POCImplementationInfo> {
+  return {
+    ...info,
+    uxRating: `${info.uxRating}`,
+    processRating: `${info.processRating}`,
+  };
+}
+
 interface OpportunityPOCImplementationProps {
   opportunity: OpportunityInPOCImplementation & Identifiable;
 }
@@ -51,6 +59,7 @@ export default function OpportunityPOCImplementation({
   opportunity,
 }: OpportunityPOCImplementationProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: {
       notes: "",
@@ -66,15 +75,21 @@ export default function OpportunityPOCImplementation({
             info: formToInfo(values),
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(infoToForm(opportunity.pocImplementationInfo!));
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.pocImplementationInfo ? (
+      {opportunity.pocImplementationInfo && !editing ? (
         <InfoTable
           title="Datos de implementación de POC"
           titleVariant="h5"
@@ -92,6 +107,7 @@ export default function OpportunityPOCImplementation({
               content: opportunity.pocDevelopmentInfo.notes,
             },
           ]}
+          onEdit={handleEdit}
         />
       ) : (
         <Grid

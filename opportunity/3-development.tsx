@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -43,6 +43,7 @@ export default function OpportunityDevelopment({
   opportunity,
 }: OpportunityDevelopmentProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -57,15 +58,21 @@ export default function OpportunityDevelopment({
             info: values,
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(opportunity.developmentInfo!);
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.developmentInfo ? (
+      {opportunity.developmentInfo && !editing ? (
         <Grid container direction="column" rowSpacing={2}>
           <Grid item>
             <InfoTable
@@ -81,6 +88,7 @@ export default function OpportunityDevelopment({
                   content: opportunity.developmentInfo.notes,
                 },
               ]}
+              onEdit={handleEdit}
             />
           </Grid>
           <Grid item>
