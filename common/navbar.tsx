@@ -11,6 +11,7 @@ import {
 import React from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useRouter } from "next/router";
+import { persistor } from "../state/store";
 
 export default function Navbar() {
   const router = useRouter();
@@ -23,16 +24,20 @@ export default function Navbar() {
     setAnchor(null);
   };
   const handleLoginClick = () => {
-    router.push('/login');
+    router.push("/login");
   };
   const handleLogoutClick = () => {
     handleClose();
-    router.push('/');
+    router.push("/");
   };
   const handleOpportunityClick = () => {
     handleClose();
-    router.push('/opportunity');
-  }
+    router.push("/opportunity");
+  };
+  const handleReset = () => {
+    persistor.purge();
+    window.location.reload();
+  };
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -42,7 +47,7 @@ export default function Navbar() {
             edge="start"
             color="inherit"
             aria-label="menu"
-            aria-expanded={open ? 'true' : undefined}
+            aria-expanded={open ? "true" : undefined}
             onClick={handleClick}
             sx={{ mr: 2 }}
           >
@@ -54,16 +59,19 @@ export default function Navbar() {
             open={open}
             onClose={handleClose}
             MenuListProps={{
-              'aria-labelledby': 'basic-button',
+              "aria-labelledby": "basic-button",
             }}
           >
             <MenuItem onClick={handleOpportunityClick}>Oportunidades</MenuItem>
-            <MenuItem onClick={handleLogoutClick}>Logout</MenuItem>
+            <MenuItem onClick={handleReset}>Borrar datos</MenuItem>
+            <MenuItem onClick={handleLogoutClick}>Cerrar sesión</MenuItem>
           </Menu>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             /CRM/
           </Typography>
-          <Button color="inherit" onClick={handleLoginClick}>Login</Button>
+          <Button color="inherit" onClick={handleLoginClick}>
+            Login
+          </Button>
         </Toolbar>
       </AppBar>
     </Box>
