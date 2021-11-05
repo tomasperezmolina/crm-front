@@ -5,16 +5,17 @@ import React, { useEffect } from "react";
 import Navbar from "../common/navbar";
 
 import type { AppProps } from "next/app";
-import { Alert, Box, Snackbar } from "@mui/material";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 import { Provider } from "react-redux";
-import store from "../state/store";
+import { store, persistor } from "../state/store";
 import { useAppDispatch, useAppSelector } from "../state/dispatch";
 import { closeSnackbar, selectSnackbar } from "../state/snackbar";
 import { loadOpportunities, selectOpportunities } from "../state/opportunities";
+import { PersistGate } from "redux-persist/integration/react";
 
 function WrappedApp({ Component, pageProps }: AppProps) {
   const dispatch = useAppDispatch();
-  const {open, message, type} = useAppSelector(selectSnackbar);
+  const { open, message, type } = useAppSelector(selectSnackbar);
   const handleClose = (_event?: React.SyntheticEvent, reason?: string) => {
     if (reason === "clickaway") {
       return;
@@ -23,7 +24,7 @@ function WrappedApp({ Component, pageProps }: AppProps) {
   };
   const opportunities = useAppSelector(selectOpportunities);
   useEffect(() => {
-    if (opportunities.state === 'not-asked') {
+    if (opportunities.state === "not-asked") {
       dispatch(loadOpportunities());
     }
   }, [dispatch, opportunities]);
@@ -126,7 +127,9 @@ function WrappedApp({ Component, pageProps }: AppProps) {
 function MyApp(props: AppProps) {
   return (
     <Provider store={store}>
-      <WrappedApp {...props}/>
+      <PersistGate loading={<CircularProgress />} persistor={persistor}>
+        <WrappedApp {...props} />
+      </PersistGate>
     </Provider>
   );
 }
