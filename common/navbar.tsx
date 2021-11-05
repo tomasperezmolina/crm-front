@@ -34,6 +34,10 @@ export default function Navbar() {
     handleClose();
     router.push("/opportunity");
   };
+  const handleArchiveClick = () => {
+    handleClose();
+    router.push('/opportunity/archive');
+  };
   const handleReset = () => {
     persistor.purge();
     window.location.reload();
@@ -63,6 +67,7 @@ export default function Navbar() {
             }}
           >
             <MenuItem onClick={handleOpportunityClick}>Oportunidades</MenuItem>
+            <MenuItem onClick={handleArchiveClick}>Archivadas</MenuItem>
             <MenuItem onClick={handleReset}>Borrar datos (DEBUG)</MenuItem>
             <MenuItem onClick={handleLogoutClick}>Cerrar sesión</MenuItem>
           </Menu>

@@ -1,5 +1,5 @@
 import { Identifiable } from "../model/base";
-import { OpportunityCompleted as OpportunityCompletedModel } from "../model/opportunity";
+import { CompletedOpportunity as OpportunityCompletedModel } from "../model/opportunity";
 
 interface OpportunityCompletedProps {
     opportunity: OpportunityCompletedModel & Identifiable

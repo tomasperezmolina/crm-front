@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Box,
   Button,
@@ -15,16 +15,14 @@ import { useRouter } from "next/router";
 import { OpportunityInfo, StepType } from "../../model/opportunity";
 import { stepTypeToSpanish } from "../../spanish/opportunity";
 import { grey } from "@mui/material/colors";
-import { useAppDispatch, useAppSelector } from "../../state/dispatch";
+import { useAppSelector } from "../../state/dispatch";
 import {
-  loadOpportunities,
   selectOpportunities,
 } from "../../state/opportunities";
 import { RemoteData } from "../../model/remote-data";
 import { Identifiable } from "../../model/base";
 
 interface OpportunitiesProps {
-  id?: string;
 }
 
 interface Client {
@@ -62,51 +60,6 @@ const states: State[] = [
     name: "Negotiation",
     color: "hsla(359, 100%, 50%, 1)",
   },
-];
-
-const clients: Client[][] = [
-  Array(5)
-    .fill(0)
-    .map(() => ({
-      name: "whatever",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et blandit purus, non lacinia neque. Nullam quis aliquam lorem. Donec a volutpat risus, quis finibus tellus. Aenean id posuere turpis, eget iaculis est.",
-    })),
-  Array(1)
-    .fill(0)
-    .map(() => ({
-      name: "whatever",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et blandit purus, non lacinia neque. Nullam quis aliquam lorem. Donec a volutpat risus, quis finibus tellus. Aenean id posuere turpis, eget iaculis est.",
-    })),
-  Array(4)
-    .fill(0)
-    .map(() => ({
-      name: "whatever",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et blandit purus, non lacinia neque. Nullam quis aliquam lorem. Donec a volutpat risus, quis finibus tellus. Aenean id posuere turpis, eget iaculis est.",
-    })),
-  Array(2)
-    .fill(0)
-    .map(() => ({
-      name: "whatever",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et blandit purus, non lacinia neque. Nullam quis aliquam lorem. Donec a volutpat risus, quis finibus tellus. Aenean id posuere turpis, eget iaculis est.",
-    })),
-  Array(3)
-    .fill(0)
-    .map(() => ({
-      name: "whatever",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et blandit purus, non lacinia neque. Nullam quis aliquam lorem. Donec a volutpat risus, quis finibus tellus. Aenean id posuere turpis, eget iaculis est.",
-    })),
-  Array(3)
-    .fill(0)
-    .map(() => ({
-      name: "whatever",
-      description:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et blandit purus, non lacinia neque. Nullam quis aliquam lorem. Donec a volutpat risus, quis finibus tellus. Aenean id posuere turpis, eget iaculis est.",
-    })),
 ];
 
 interface SkeletonCardProps {

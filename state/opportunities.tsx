@@ -12,7 +12,7 @@ import {
   FirstMeetingInfo,
   LicenseType,
   NegotiationInfo,
-  OpportunityCompleted,
+  CompletedOpportunity,
   OpportunityInDevelopment,
   OpportunityInFirstMeeting,
   OpportunityInfo,
@@ -25,6 +25,7 @@ import {
   ProgramType,
   steps,
   StepType,
+  CanceledOpportunity,
 } from "../model/opportunity";
 import { licensePrice } from "../model/pricing";
 import * as RemoteData from "../model/remote-data";
@@ -168,6 +169,36 @@ function mockNegotiationCompany(
   };
 }
 
+function mockCompletedCompany(
+  name: string
+): CompletedOpportunity & Identifiable {
+  const previousData = mockNegotiationCompany(name);
+  return {
+    ...previousData,
+    step: "Completed",
+    negotiationInfo: {
+      cuit: "20431533450",
+      socialReason: "MOCK S.A.",
+      address: "Cabildo 1240, CABA",
+      paymentMethod: "Transferencia",
+      paymentTerms: "24 cuotas",
+      packs: previousData.developmentInfo.packs,
+    },
+  };
+}
+
+function mockCancelOpportunity(
+  o: OpportunityInfo & Identifiable
+): CanceledOpportunity & Identifiable {
+  return {
+    ...o,
+    step: "Canceled",
+    cancellationInfo: {
+      reason: "Razón de cancelación",
+    },
+  };
+}
+
 export const loadOpportunities = createAsyncThunk(
   "opportunities/loadOpportunities",
   async () => {
@@ -195,12 +226,26 @@ export const loadOpportunities = createAsyncThunk(
       mockPOCImplementationCompany("Nike"),
       mockPOCImplementationCompany("ZARA"),
       mockPOCImplementationCompany("Yamaha"),
-      mockPOCImplementationCompany("Yamaha"),
       mockNegotiationCompany("Aukey"),
       mockNegotiationCompany("GUESS"),
       mockNegotiationCompany("LG"),
       mockNegotiationCompany("Adidas"),
       mockNegotiationCompany("Blizzard"),
+      mockCompletedCompany("Mulesoft"),
+      mockCompletedCompany("OnePlus"),
+      mockCompletedCompany("Samsung"),
+      mockCompletedCompany("Facebook"),
+      mockCompletedCompany("Twitter"),
+      mockCompletedCompany("Converse"),
+      mockCompletedCompany("Penguin"),
+      mockCompletedCompany("Levy's"),
+      mockCompletedCompany("CASIO"),
+      mockCancelOpportunity(mockDevelopmentCompany('NOKIA')),
+      mockCancelOpportunity(mockDevelopmentCompany('BlackBerry')),
+      mockCancelOpportunity(mockPOCDevelopmentCompany('Timberland')),
+      mockCancelOpportunity(mockProspectCompany('Guaymallén')),
+      mockCancelOpportunity(mockPOCImplementationCompany('Disney')),
+      mockCancelOpportunity(mockFirstMeetingCompany('General Motors')),
     ];
   }
 );
@@ -233,7 +278,7 @@ function findWithIndex<T>(
 }
 
 type ElementKeys = keyof Omit<
-  Omit<OpportunityCompleted, keyof BaseOpportunityInfo>,
+  Omit<CompletedOpportunity, keyof BaseOpportunityInfo>,
   "step"
 >;
 
@@ -241,7 +286,7 @@ function saveElement<T extends ElementKeys>(
   state: OpportunitiesState,
   id: number,
   elementKey: T,
-  element: OpportunityCompleted[T]
+  element: CompletedOpportunity[T]
 ) {
   return RemoteData.map(state.list, (os) => {
     const { element: o, indexOf } = findWithIndex(os, (o) => o.id === id);
