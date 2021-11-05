@@ -33,6 +33,7 @@ import {
   ProgramType,
   programTypes,
 } from "../model/opportunity";
+import { licensePrice } from "../model/pricing";
 
 const validationSchema = yup.object({
   program: yup
@@ -48,10 +49,6 @@ const validationSchema = yup.object({
     .positive("El número de licencias debe ser positivo")
     .required("Se require una cantidad de licencias"),
 });
-
-function licensePrice(program: ProgramType, license: LicenseType) {
-  return 40;
-}
 
 type LicenseTableRow = LicenseRow & {
   id: string;
