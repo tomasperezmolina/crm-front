@@ -12,7 +12,12 @@ import {
 } from "@mui/material";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { useRouter } from "next/router";
-import { OpportunityInfo, StepType } from "../../model/opportunity";
+import {
+  OpportunityInDevelopment,
+  OpportunityInfo,
+  steps,
+  StepType,
+} from "../../model/opportunity";
 import { stepTypeToSpanish } from "../../spanish/opportunity";
 import { grey } from "@mui/material/colors";
 import { useAppSelector } from "../../state/dispatch";
@@ -176,9 +181,32 @@ const Opportunities: NextPage<OpportunitiesProps> = () => {
         <Grid item container direction="row" columnSpacing={2}>
           {states.map((s, idx, array) => (
             <Grid xs={2} key={idx} item sx={{ position: "relative" }}>
-              <Typography align="center">
+              <Typography align="center" gutterBottom>
                 {stepTypeToSpanish(s.name)}
               </Typography>
+              {steps.indexOf(s.name) >= steps.indexOf("Development") && (
+                <Typography align="center" sx={{fontWeight: 'bold'}}>
+                  $ {opportunities.state === "success" &&
+                    opportunities.value
+                      .filter((o) => o.step === s.name)
+                      .map((o) => {
+                        if (
+                          steps.indexOf(o.step) >= steps.indexOf("Development")
+                        ) {
+                          return (
+                            (
+                              o as OpportunityInDevelopment
+                            ).developmentInfo?.packs
+                              .map((p) => p.pricePerUnit * p.amount)
+                              .reduce((a, b) => a + b, 0) || 0
+                          );
+                        } else {
+                          return 0;
+                        }
+                      })
+                      .reduce((a, b) => a + b, 0)}
+                </Typography>
+              )}
               {idx !== array.length - 1 && (
                 <ArrowForwardIosIcon
                   sx={{
