@@ -12,6 +12,7 @@ import {
   FirstMeetingInfo,
   LicenseType,
   NegotiationInfo,
+  CancelOpportunityInfo,
   CompletedOpportunity,
   OpportunityInDevelopment,
   OpportunityInFirstMeeting,
@@ -279,7 +280,7 @@ function findWithIndex<T>(
 }
 
 type ElementKeys = keyof Omit<
-  Omit<CompletedOpportunity, keyof BaseOpportunityInfo>,
+  Omit<CanceledOpportunity, keyof BaseOpportunityInfo>,
   "step"
 >;
 
@@ -287,7 +288,7 @@ function saveElement<T extends ElementKeys>(
   state: OpportunitiesState,
   id: number,
   elementKey: T,
-  element: CompletedOpportunity[T]
+  element: CanceledOpportunity[T]
 ) {
   return RemoteData.map(state.list, (os) => {
     const { element: o, indexOf } = findWithIndex(os, (o) => o.id === id);
@@ -310,7 +311,7 @@ function stateTransition(
   return RemoteData.map(state.list, (os) => {
     const { element: o, indexOf } = findWithIndex(os, (o) => o.id === id);
     if (!o) throw new Error(OPPORTUNITY_NOT_FOUND);
-    if (o.step !== steps[steps.indexOf(target) - 1])
+    if (target !== 'Canceled' && o.step !== steps[steps.indexOf(target) - 1])
       throw new Error(INVALID_SOURCE_STEP);
     // @ts-ignore
     if (!o[elementKey])
@@ -446,6 +447,23 @@ const opportunitiesSlice = createSlice({
         "negotiationInfo"
       );
     },
+    cancelOpportunity: (
+      state,
+      action: PayloadAction<{ id: number; info: CancelOpportunityInfo }>
+    ) => {
+      state.list = saveElement(
+        state,
+        action.payload.id,
+        "cancellationInfo",
+        action.payload.info
+      );
+      state.list = stateTransition(
+        state,
+        action.payload.id,
+        "Canceled",
+        "cancellationInfo"
+      );
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -482,6 +500,7 @@ export const {
   sendOpportunityToPOCDevelopment,
   sendOpportunityToPOCImplementation,
   completeOpportunity,
+  cancelOpportunity,
 } = opportunitiesSlice.actions;
 
 export const selectOpportunities = (state: AppState) =>

@@ -44,6 +44,7 @@ import { formikInitialValues } from "../../../common/formik-props";
 import { Identifiable } from "../../../model/base";
 import { useAppDispatch, useAppSelector } from "../../../state/dispatch";
 import {
+  cancelOpportunity,
   completeOpportunity,
   selectOpportunity,
   sendOpportunityToDevelopment,
@@ -66,21 +67,50 @@ const renderStage = (
 ) => {
   switch (stage) {
     case "Prospect":
-      return <OpportunityProspect opportunity={opportunity as OpportunityInProspect & Identifiable} />;
+      return (
+        <OpportunityProspect
+          opportunity={opportunity as OpportunityInProspect & Identifiable}
+        />
+      );
     case "First meeting":
-      return <OpportunityFirstMeeting opportunity={opportunity as OpportunityInFirstMeeting & Identifiable} />;
+      return (
+        <OpportunityFirstMeeting
+          opportunity={opportunity as OpportunityInFirstMeeting & Identifiable}
+        />
+      );
     case "Development":
-      return <OpportunityDevelopment opportunity={opportunity as OpportunityInDevelopment & Identifiable} />;
+      return (
+        <OpportunityDevelopment
+          opportunity={opportunity as OpportunityInDevelopment & Identifiable}
+        />
+      );
     case "POC development":
-      return <OpportunityPOCDevelopment opportunity={opportunity as OpportunityInPOCDevelopment & Identifiable} />;
+      return (
+        <OpportunityPOCDevelopment
+          opportunity={
+            opportunity as OpportunityInPOCDevelopment & Identifiable
+          }
+        />
+      );
     case "POC implementation":
-      return <OpportunityPOCImplementation opportunity={opportunity as OpportunityInPOCImplementation & Identifiable} />;
+      return (
+        <OpportunityPOCImplementation
+          opportunity={
+            opportunity as OpportunityInPOCImplementation & Identifiable
+          }
+        />
+      );
     case "Negotiation":
-      return <OpportunityNegotiation opportunity={opportunity as OpportunityInNegotiation & Identifiable} />;
+      return (
+        <OpportunityNegotiation
+          opportunity={opportunity as OpportunityInNegotiation & Identifiable}
+        />
+      );
   }
 };
 
 interface CancelExplanationDialogProps {
+  id: number;
   open: boolean;
   onClose: () => void;
 }
@@ -90,9 +120,11 @@ const validationSchema = yup.object({
 });
 
 const FinalizationExplanationDialog = ({
+  id,
   open,
   onClose,
 }: CancelExplanationDialogProps) => {
+  const dispatch = useAppDispatch();
   const handleClose = () => {
     onClose();
     formik.resetForm();
@@ -104,9 +136,18 @@ const FinalizationExplanationDialog = ({
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values: CancelOpportunityInfo) => {
-      alert(JSON.stringify(values, null, 2));
-      handleClose();
+    onSubmit: async (values: CancelOpportunityInfo) => {
+      try {
+        await dispatch(
+          cancelOpportunity({
+            id,
+            info: values,
+          })
+        );
+        handleClose();
+      } catch (e: any) {
+        dispatch(openSnackbar({ msg: e.message, type: "error" }));
+      }
     },
   });
 
@@ -291,6 +332,7 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
         </Container>
       </Box>
       <FinalizationExplanationDialog
+        id={opportunity.id}
         open={dialogOpen}
         onClose={handleCloseDialog}
       />
