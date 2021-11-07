@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import { FormikLicenseBuilder, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 import {
+  CanceledOpportunity,
   DevelopmentInfo,
   OpportunityInDevelopment,
 } from "../model/opportunity";
@@ -36,7 +37,7 @@ const validationSchema = yup.object({
 });
 
 interface OpportunityDevelopmentProps {
-  opportunity: OpportunityInDevelopment & Identifiable;
+  opportunity: (OpportunityInDevelopment | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityDevelopment({
@@ -88,7 +89,7 @@ export default function OpportunityDevelopment({
                   content: opportunity.developmentInfo.notes,
                 },
               ]}
-              onEdit={handleEdit}
+              onEdit={opportunity.step !== 'Canceled' && handleEdit}
             />
           </Grid>
           <Grid item>
@@ -103,7 +104,8 @@ export default function OpportunityDevelopment({
           </Grid>
         </Grid>
       ) : (
-        <Grid
+        <>
+          {opportunity.step !== "Canceled" && (<Grid
           container
           direction="column"
           rowSpacing={2}
@@ -152,6 +154,8 @@ export default function OpportunityDevelopment({
             </form>
           </Grid>
         </Grid>
+          )}
+        </>
       )}
     </>
   );

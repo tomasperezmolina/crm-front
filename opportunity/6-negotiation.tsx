@@ -9,6 +9,7 @@ import {
 } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 import {
+  CanceledOpportunity,
   NegotiationInfo,
   OpportunityInNegotiation,
 } from "../model/opportunity";
@@ -37,7 +38,7 @@ const validationSchema = yup.object({
 });
 
 interface OpportunityNegotiationProps {
-  opportunity: OpportunityInNegotiation & Identifiable;
+  opportunity: (OpportunityInNegotiation | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityNegotiation({
@@ -105,7 +106,7 @@ export default function OpportunityNegotiation({
                   content: opportunity.negotiationInfo.contractFilename,
                 },
               ]}
-              onEdit={handleEdit}
+              onEdit={opportunity.step !== "Canceled" && handleEdit}
             />
           </Grid>
           <Grid item>
@@ -120,90 +121,94 @@ export default function OpportunityNegotiation({
           </Grid>
         </Grid>
       ) : (
-        <Grid
-          container
-          direction="column"
-          justifyContent="center"
-          sx={{ height: "inherit" }}
-          rowSpacing={2}
-        >
-          <Grid item>
-            <FormikLicenseBuilder
-              name="packs"
-              label="Licencias"
-              formik={formik}
-            />
-          </Grid>
-          <Grid item>
-            <form onSubmit={formik.handleSubmit}>
-              <Grid container direction="column" rowSpacing={2}>
-                <Grid item>
-                  <FormikTextField
-                    name="address"
-                    label="Dirección"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="cuit"
-                    label="CUIT"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="socialReason"
-                    label="Razón Social"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="paymentMethod"
-                    label="Medio de pago"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="paymentTerms"
-                    label="Términos de pago"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikFileInput
-                    name="contractFilename"
-                    label="Contrato"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                    onUpload={() =>
-                      new Promise<void>((resolve) => {
-                        setTimeout(() => resolve(), 1000);
-                      })
-                    }
-                  />
-                </Grid>
-                <Grid item>
-                  <Button
-                    fullWidth
-                    color="primary"
-                    variant="contained"
-                    type="submit"
-                  >
-                    Enviar
-                  </Button>
-                </Grid>
+        <>
+          {opportunity.step !== "Canceled" && (
+            <Grid
+              container
+              direction="column"
+              justifyContent="center"
+              sx={{ height: "inherit" }}
+              rowSpacing={2}
+            >
+              <Grid item>
+                <FormikLicenseBuilder
+                  name="packs"
+                  label="Licencias"
+                  formik={formik}
+                />
               </Grid>
-            </form>
-          </Grid>
-        </Grid>
+              <Grid item>
+                <form onSubmit={formik.handleSubmit}>
+                  <Grid container direction="column" rowSpacing={2}>
+                    <Grid item>
+                      <FormikTextField
+                        name="address"
+                        label="Dirección"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="cuit"
+                        label="CUIT"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="socialReason"
+                        label="Razón Social"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="paymentMethod"
+                        label="Medio de pago"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="paymentTerms"
+                        label="Términos de pago"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikFileInput
+                        name="contractFilename"
+                        label="Contrato"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                        onUpload={() =>
+                          new Promise<void>((resolve) => {
+                            setTimeout(() => resolve(), 1000);
+                          })
+                        }
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Button
+                        fullWidth
+                        color="primary"
+                        variant="contained"
+                        type="submit"
+                      >
+                        Enviar
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
+              </Grid>
+            </Grid>
+          )}
+        </>
       )}
     </>
   );

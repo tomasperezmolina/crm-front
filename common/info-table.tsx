@@ -12,7 +12,7 @@ interface InfoTableProps {
   title: string;
   titleVariant: Variant;
   rows: InfoTableRow[];
-  onEdit?: () => void;
+  onEdit?: (() => void) | false;
 }
 
 export function InfoTable({

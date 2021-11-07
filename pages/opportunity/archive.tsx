@@ -23,8 +23,7 @@ import { red, green } from "@mui/material/colors";
 import { stepTypeToSpanish } from "../../spanish/opportunity";
 import {
   CanceledOpportunity,
-  OpportunityInfo,
-  StepType,
+  inferCanceledOpportunityStep,
 } from "../../model/opportunity";
 
 interface OpportunitiesArchiveProps {}
@@ -258,16 +257,6 @@ export function OpportunitiesArchiveTable({
       </Paper>
     </Box>
   );
-}
-
-function inferCanceledOpportunityStep(o: CanceledOpportunity): StepType {
-  if (!o.contact) return "Prospect";
-  if (!o.firstMeetingInfo) return "First meeting";
-  if (!o.developmentInfo) return "Development";
-  if (!o.pocDevelopmentInfo) return "POC development";
-  if (!o.pocImplementationInfo) return "POC implementation";
-  if (!o.negotiationInfo) return "Negotiation";
-  throw new Error("Opportunity should not be cancelled");
 }
 
 const OpportunitiesArchive: NextPage<OpportunitiesArchiveProps> = () => {

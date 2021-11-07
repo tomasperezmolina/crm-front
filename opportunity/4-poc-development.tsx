@@ -9,6 +9,7 @@ import {
 } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 import {
+  CanceledOpportunity,
   OpportunityInPOCDevelopment,
   POCDevelopmentInfo,
 } from "../model/opportunity";
@@ -53,7 +54,7 @@ const validationSchema = yup.object({
 });
 
 interface OpportunityPOCDevelopmentProps {
-  opportunity: OpportunityInPOCDevelopment & Identifiable;
+  opportunity: (OpportunityInPOCDevelopment | CanceledOpportunity) & Identifiable;
 }
 
 function formToInfo(form: POCDevelopmentInfo): POCDevelopmentInfo {
@@ -137,7 +138,7 @@ export default function OpportunityPOCDevelopment({
                   content: opportunity.pocDevelopmentInfo.notes,
                 },
               ]}
-              onEdit={handleEdit}
+              onEdit={opportunity.step !== 'Canceled' && handleEdit}
             />
           </Grid>
           <Grid item>
@@ -152,7 +153,8 @@ export default function OpportunityPOCDevelopment({
           </Grid>
         </Grid>
       ) : (
-        <Grid
+        <>
+          {opportunity.step !== "Canceled" && (<Grid
           container
           direction="column"
           justifyContent="center"
@@ -233,6 +235,8 @@ export default function OpportunityPOCDevelopment({
             </form>
           </Grid>
         </Grid>
+          )}
+        </>
       )}
     </>
   );

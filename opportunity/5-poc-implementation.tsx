@@ -4,6 +4,7 @@ import * as yup from "yup";
 import { useFormik } from "formik";
 import { Form, FormikRating, FormikTextField } from "../common/formik-fields";
 import {
+  CanceledOpportunity,
   OpportunityInPOCImplementation,
   POCImplementationInfo,
 } from "../model/opportunity";
@@ -52,7 +53,7 @@ function infoToForm(info: POCImplementationInfo): Form<POCImplementationInfo> {
 }
 
 interface OpportunityPOCImplementationProps {
-  opportunity: OpportunityInPOCImplementation & Identifiable;
+  opportunity: (OpportunityInPOCImplementation | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityPOCImplementation({
@@ -104,13 +105,14 @@ export default function OpportunityPOCImplementation({
             },
             {
               title: "Notas",
-              content: opportunity.pocDevelopmentInfo.notes,
+              content: opportunity.pocImplementationInfo.notes,
             },
           ]}
-          onEdit={handleEdit}
+          onEdit={opportunity.step !== 'Canceled' && handleEdit}
         />
       ) : (
-        <Grid
+        <>
+          {opportunity.step !== "Canceled" && (<Grid
           container
           direction="column"
           justifyContent="center"
@@ -168,6 +170,8 @@ export default function OpportunityPOCImplementation({
             </form>
           </Grid>
         </Grid>
+          )}
+        </>
       )}
     </>
   );

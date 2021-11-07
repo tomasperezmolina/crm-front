@@ -11,6 +11,7 @@ import "yup-phone";
 import { Form, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 import {
+  CanceledOpportunity,
   Contact,
   OpportunityInfo,
   OpportunityInProspect,
@@ -83,7 +84,7 @@ function CompanyInfo({ company }: CompanyInfoProps) {
 }
 
 interface OpportunityProspectProps {
-  opportunity: OpportunityInProspect & Identifiable;
+  opportunity: (OpportunityInProspect | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityProspect({
@@ -146,77 +147,81 @@ export default function OpportunityProspect({
                 content: opportunity.contact.phone,
               },
             ]}
-            onEdit={handleEdit}
+            onEdit={opportunity.step !== "Canceled" && handleEdit}
           />
         ) : (
-          <Grid
-            container
-            direction="column"
-            justifyContent="center"
-            sx={{ height: "inherit" }}
-          >
-            <Grid item>
-              <Typography variant="h4" align="center" gutterBottom>
-                Agregar nuevo contacto
-              </Typography>
-            </Grid>
-            <Grid item>
-              <form onSubmit={formik.handleSubmit}>
-                <Grid container direction="column" rowSpacing={2}>
-                  <Grid item>
-                    <FormikTextField
-                      name="email"
-                      label="Email"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="name"
-                      label="Nombre"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="surname"
-                      label="Apellido"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="linkedin"
-                      label="LinkedIn"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="phone"
-                      label="Teléfono"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Button
-                      fullWidth
-                      color="primary"
-                      variant="contained"
-                      type="submit"
-                    >
-                      Enviar
-                    </Button>
-                  </Grid>
+          <>
+            {opportunity.step !== "Canceled" && (
+              <Grid
+                container
+                direction="column"
+                justifyContent="center"
+                sx={{ height: "inherit" }}
+              >
+                <Grid item>
+                  <Typography variant="h4" align="center" gutterBottom>
+                    Agregar nuevo contacto
+                  </Typography>
                 </Grid>
-              </form>
-            </Grid>
-          </Grid>
+                <Grid item>
+                  <form onSubmit={formik.handleSubmit}>
+                    <Grid container direction="column" rowSpacing={2}>
+                      <Grid item>
+                        <FormikTextField
+                          name="email"
+                          label="Email"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="name"
+                          label="Nombre"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="surname"
+                          label="Apellido"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="linkedin"
+                          label="LinkedIn"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="phone"
+                          label="Teléfono"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <Button
+                          fullWidth
+                          color="primary"
+                          variant="contained"
+                          type="submit"
+                        >
+                          Enviar
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </form>
+                </Grid>
+              </Grid>
+            )}
+          </>
         )}
       </Grid>
     </Grid>

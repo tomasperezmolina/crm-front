@@ -181,3 +181,13 @@ export interface NegotiationInfo {
 export interface CancelOpportunityInfo {
   reason: string;
 }
+
+export function inferCanceledOpportunityStep(o: CanceledOpportunity): StepType {
+  if (!o.contact) return "Prospect";
+  if (!o.firstMeetingInfo) return "First meeting";
+  if (!o.developmentInfo) return "Development";
+  if (!o.pocDevelopmentInfo) return "POC development";
+  if (!o.pocImplementationInfo) return "POC implementation";
+  if (!o.negotiationInfo) return "Negotiation";
+  throw new Error("Opportunity should not be cancelled");
+}
