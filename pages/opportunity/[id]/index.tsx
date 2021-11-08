@@ -1,5 +1,5 @@
-import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import type { NextPage } from "next";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -47,7 +47,7 @@ import { useFormik } from "formik";
 import { formikInitialValues } from "../../../common/formik-props";
 import { Identifiable } from "../../../model/base";
 import { useAppDispatch, useAppSelector } from "../../../state/dispatch";
-import opportunities, {
+import {
   cancelOpportunity,
   completeOpportunity,
   selectOpportunity,
@@ -57,10 +57,10 @@ import opportunities, {
   sendOpportunityToPOCDevelopment,
   sendOpportunityToPOCImplementation,
 } from "../../../state/opportunities";
-import * as RemoteData from "../../../model/remote-data";
 import ErrorPage from "next/error";
 import { openSnackbar } from "../../../state/snackbar";
 import CancelIcon from "@mui/icons-material/Cancel";
+import { useRouter } from "next/router";
 
 interface OpportunityProps {
   id: number;
@@ -362,7 +362,10 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
                   <Grid item>
                     <Alert severity="error">
                       <AlertTitle>Oportunidad cancelada</AlertTitle>
-                      {(opportunity as CanceledOpportunity).cancellationInfo.reason}
+                      {
+                        (opportunity as CanceledOpportunity).cancellationInfo
+                          .reason
+                      }
                     </Alert>
                   </Grid>
                 )}
@@ -381,7 +384,11 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
   );
 }
 
-const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
+const Opportunity: NextPage<OpportunityProps> = () => {
+  const router = useRouter();
+  const { id: rawId } = router.query;
+  const parsedId = parseInt(rawId as string)
+  const id = isNaN(parsedId) ? -1 : parsedId;
   const opportunity = useAppSelector(selectOpportunity(id));
 
   return (
@@ -405,35 +412,6 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
       )}
     </>
   );
-};
-
-export const getStaticProps: GetStaticProps<OpportunityProps> = async (
-  context
-) => {
-  const rawId = context.params?.id as string;
-  if (!rawId) {
-    return {
-      notFound: true,
-    };
-  }
-  const parsed = parseInt(rawId);
-  if (isNaN(parsed)) {
-    return {
-      notFound: true,
-    };
-  }
-  return {
-    props: {
-      id: parsed,
-    },
-  };
-};
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: "blocking",
-  };
 };
 
 export default Opportunity;
