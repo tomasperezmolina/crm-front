@@ -28,7 +28,7 @@ export default NextAuth({
             throw new Error("Wrong email or password");
           }
           const { token } = await authRes.json();
-          const userRes = await fetch("http://localhost:8080/user/me", {
+          const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/me`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },

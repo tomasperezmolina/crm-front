@@ -9,6 +9,7 @@ import storage from 'redux-persist/lib/storage'
 import * as ReduxPersist from "redux-persist";
 import opportunitiesSlice from "./opportunities";
 import snackbarSlice from "./snackbar";
+import sessionSlice from "./session";
 
 const persistConfig = {
   key: "root",
@@ -18,6 +19,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   opportunities: opportunitiesSlice,
   snackbar: snackbarSlice,
+  session: sessionSlice,
 });
 
 const reducer = persistReducer(persistConfig, rootReducer);

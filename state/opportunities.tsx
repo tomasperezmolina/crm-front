@@ -1,4 +1,5 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { BaseThunkAPI } from "@reduxjs/toolkit/dist/createAsyncThunk";
 import moment from "moment";
 import {
   INVALID_SOURCE_STEP,
@@ -27,6 +28,9 @@ import {
   steps,
   StepType,
   CanceledOpportunity,
+  Industry,
+  CompanyType,
+  Region,
 } from "../model/opportunity";
 import { licensePrice } from "../model/pricing";
 import * as RemoteData from "../model/remote-data";
@@ -252,19 +256,133 @@ export const loadOpportunities = createAsyncThunk(
   }
 );
 
+interface ServerOpportunity {
+    id: number,
+    currentOwner: {
+        id: number,
+        name: string,
+        lastName: string,
+        email: string,
+        active: boolean,
+        type: "ADMIN"
+    },
+    client: {
+        id: string,
+        name: string,
+        webpage: string,
+        industry: Industry,
+        companyType: CompanyType,
+        region: Region,
+        notes: string,
+        clientContacts: [],
+        owner: {
+            id: number,
+            name: string,
+            lastName: string,
+            email: string,
+            active: true,
+            type: "ADMIN"
+        }
+    },
+    firstMeeting: {
+        id: number,
+        notes: string,
+        projectOwner: string,
+        nextMeeting: string,
+        othersInvolved: string,
+        problem: string,
+        employeeAmount: number,
+        budgetStatus: string,
+        locations: string,
+        projectDate: string,
+        projectDuration: string,
+        owner: string
+    },
+    development: {
+        id: number,
+        principalArea: string,
+        notes: string,
+        packs: [],
+        owner: string
+    },
+    pocDevelopment: {
+        id: number,
+        startDate: string,
+        endDate: string,
+        location: string,
+        successCriteria: string,
+        notes: string,
+        packs: [],
+        owner: string
+    },
+    pocInstallation: {
+        id: number,
+        notes: string,
+        uxRating: number,
+        processRating: number,
+        owner: string
+    },
+    order: {
+        id: number,
+        cuit: string,
+        socialReason: string,
+        address: string,
+        paymentMethod: string,
+        paymentTerms: string,
+        packs: [],
+        owner: string
+    },
+    cancel: {
+        id: number,
+        reason: string,
+        prevStage: string,
+        owner: string
+    },
+    stage: "PROSPECT",
+    doneDate: string
+}
+
+function opportunityInProspectFromServerOp(serverOp: ServerOpportunity): OpportunityInProspect & Identifiable {
+  return {
+    id: serverOp.id,
+    industry: serverOp.client.industry,
+    name: serverOp.client.name,
+    webpage: serverOp.client.webpage,
+    companyType: serverOp.client.companyType,
+    region: serverOp.client.region,
+    notes: serverOp.client.notes,
+    step: 'Prospect',
+  };
+}
+
 export const saveOpportunity = createAsyncThunk<
   OpportunityInfo & Identifiable,
-  NewOpportunityData
->("opportunities/saveOpportunity", async (opportunity: NewOpportunityData) => {
-  await new Promise<void>((resolve) => {
-    setTimeout(() => resolve(), 1000);
-  });
-  return {
-    id: generateId(),
-    step: "Prospect",
-    ...opportunity,
-  };
-});
+  NewOpportunityData,
+  { state: AppState }
+>(
+  "opportunities/saveOpportunity",
+  async (opportunity: NewOpportunityData, thunkApi) => {
+    const token = thunkApi.getState().session.session?.accessToken;
+    const createResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/opportunity`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(opportunity),
+      }
+    );
+    const getResponse = await fetch(createResponse.headers.get("Location")!, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const serverOpportunity: ServerOpportunity = await getResponse.json();
+    return opportunityInProspectFromServerOp(serverOpportunity);
+  }
+);
 
 function findWithIndex<T>(
   list: readonly T[],
@@ -311,7 +429,7 @@ function stateTransition(
   return RemoteData.map(state.list, (os) => {
     const { element: o, indexOf } = findWithIndex(os, (o) => o.id === id);
     if (!o) throw new Error(OPPORTUNITY_NOT_FOUND);
-    if (target !== 'Canceled' && o.step !== steps[steps.indexOf(target) - 1])
+    if (target !== "Canceled" && o.step !== steps[steps.indexOf(target) - 1])
       throw new Error(INVALID_SOURCE_STEP);
     // @ts-ignore
     if (!o[elementKey])

@@ -173,6 +173,4 @@ const Home: NextPage = () => {
   );
 };
 
-//@ts-ignore
-Home.public = true;
 export default Home;

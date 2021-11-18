@@ -11,10 +11,11 @@ import { store, persistor } from "../state/store";
 import { useAppDispatch, useAppSelector } from "../state/dispatch";
 import { closeSnackbar, selectSnackbar } from "../state/snackbar";
 import { loadOpportunities, selectOpportunities } from "../state/opportunities";
-import { SessionProvider } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import { Session } from "next-auth";
 import AuthGuard from "../common/auth-guard";
 import { PersistGate } from "redux-persist/integration/react";
+import { setSession } from "../state/session";
 
 function WrappedApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   const dispatch = useAppDispatch();
@@ -25,6 +26,10 @@ function WrappedApp({ Component, pageProps }: AppProps<{ session: Session }>) {
     }
     dispatch(closeSnackbar());
   };
+  const { data: session } = useSession({required: false});
+  useEffect(() => {
+    dispatch(setSession(session));
+  }, [dispatch, session]);
   const opportunities = useAppSelector(selectOpportunities);
   useEffect(() => {
     if (opportunities.state === "not-asked") {
