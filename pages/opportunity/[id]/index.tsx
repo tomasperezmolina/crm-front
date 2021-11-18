@@ -62,9 +62,7 @@ import { openSnackbar } from "../../../state/snackbar";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useRouter } from "next/router";
 
-interface OpportunityProps {
-  id: number;
-}
+interface OpportunityProps {}
 
 const renderStage = (
   opportunity: OpportunityInfo & Identifiable,
