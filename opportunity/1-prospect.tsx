@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid, Typography } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -10,7 +10,12 @@ import {
 import "yup-phone";
 import { Form, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
-import { Contact, OpportunityInfo, OpportunityInProspect } from "../model/opportunity";
+import {
+  CanceledOpportunity,
+  Contact,
+  OpportunityInfo,
+  OpportunityInProspect,
+} from "../model/opportunity";
 import { Identifiable } from "../model/base";
 import { InfoTable } from "../common/info-table";
 import { useAppDispatch } from "../state/dispatch";
@@ -79,29 +84,36 @@ function CompanyInfo({ company }: CompanyInfoProps) {
 }
 
 interface OpportunityProspectProps {
-  opportunity: OpportunityInProspect & Identifiable
+  opportunity: (OpportunityInProspect | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityProspect({
   opportunity,
 }: OpportunityProspectProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: async (values: Form<Contact>) => {
+    onSubmit: async (values: Contact) => {
       try {
         await dispatch(
           saveOpportunityContact({ id: opportunity.id, contact: values })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
+
+  const handleEdit = () => {
+    formik.setValues(opportunity.contact!);
+    setEditing(true);
+  };
 
   return (
     <Grid container direction="row" columnSpacing={6} alignContent="center">
@@ -109,98 +121,107 @@ export default function OpportunityProspect({
         <CompanyInfo company={opportunity} />
       </Grid>
       <Grid item xs={6}>
-        {opportunity.contact ? (
-          <InfoTable title='Contacto' titleVariant='h5' rows={[
-            {
-              title: 'Email',
-              content: opportunity.contact.email,
-            },
-            {
-              title: 'Nombre',
-              content: opportunity.contact.name,
-            },
-            {
-              title: 'Apellido',
-              content: opportunity.contact.surname,
-            },
-            {
-              title: 'LinkedIn',
-              content: opportunity.contact.linkedin,
-            },
-            {
-              title: 'Teléfono',
-              content: opportunity.contact.phone,
-            },
-          ]}/>
+        {opportunity.contact && !editing ? (
+          <InfoTable
+            title="Contacto"
+            titleVariant="h5"
+            rows={[
+              {
+                title: "Email",
+                content: opportunity.contact.email,
+              },
+              {
+                title: "Nombre",
+                content: opportunity.contact.name,
+              },
+              {
+                title: "Apellido",
+                content: opportunity.contact.surname,
+              },
+              {
+                title: "LinkedIn",
+                content: opportunity.contact.linkedin,
+              },
+              {
+                title: "Teléfono",
+                content: opportunity.contact.phone,
+              },
+            ]}
+            onEdit={opportunity.step !== "Canceled" && handleEdit}
+          />
         ) : (
-          <Grid
-            container
-            direction="column"
-            justifyContent="center"
-            sx={{ height: "inherit" }}
-          >
-            <Grid item>
-              <Typography variant="h4" align="center" gutterBottom>
-                Agregar nuevo contacto
-              </Typography>
-            </Grid>
-            <Grid item>
-              <form onSubmit={formik.handleSubmit}>
-                <Grid container direction="column" rowSpacing={2}>
-                  <Grid item>
-                    <FormikTextField
-                      name="email"
-                      label="Email"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="name"
-                      label="Nombre"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="surname"
-                      label="Apellido"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="linkedin"
-                      label="LinkedIn"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="phone"
-                      label="Teléfono"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Button
-                      fullWidth
-                      color="primary"
-                      variant="contained"
-                      type="submit"
-                    >
-                      Enviar
-                    </Button>
-                  </Grid>
+          <>
+            {opportunity.step !== "Canceled" && (
+              <Grid
+                container
+                direction="column"
+                justifyContent="center"
+                sx={{ height: "inherit" }}
+              >
+                <Grid item>
+                  <Typography variant="h4" align="center" gutterBottom>
+                    Agregar nuevo contacto
+                  </Typography>
                 </Grid>
-              </form>
-            </Grid>
-          </Grid>
+                <Grid item>
+                  <form onSubmit={formik.handleSubmit}>
+                    <Grid container direction="column" rowSpacing={2}>
+                      <Grid item>
+                        <FormikTextField
+                          name="email"
+                          label="Email"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="name"
+                          label="Nombre"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="surname"
+                          label="Apellido"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="linkedin"
+                          label="LinkedIn"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="phone"
+                          label="Teléfono"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <Button
+                          fullWidth
+                          color="primary"
+                          variant="contained"
+                          type="submit"
+                        >
+                          Enviar
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </form>
+                </Grid>
+              </Grid>
+            )}
+          </>
         )}
       </Grid>
     </Grid>

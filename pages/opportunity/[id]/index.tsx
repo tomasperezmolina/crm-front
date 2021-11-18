@@ -1,5 +1,5 @@
-import type { GetStaticPaths, GetStaticProps, NextPage } from "next";
-import React, { useEffect, useState } from "react";
+import type { NextPage } from "next";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -15,9 +15,13 @@ import {
   DialogContentText,
   DialogActions,
   CircularProgress,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import {
+  CanceledOpportunity,
   CancelOpportunityInfo,
+  inferCanceledOpportunityStep,
   OpportunityInDevelopment,
   OpportunityInFirstMeeting,
   OpportunityInfo,
@@ -44,6 +48,7 @@ import { formikInitialValues } from "../../../common/formik-props";
 import { Identifiable } from "../../../model/base";
 import { useAppDispatch, useAppSelector } from "../../../state/dispatch";
 import {
+  cancelOpportunity,
   completeOpportunity,
   selectOpportunity,
   sendOpportunityToDevelopment,
@@ -52,13 +57,12 @@ import {
   sendOpportunityToPOCDevelopment,
   sendOpportunityToPOCImplementation,
 } from "../../../state/opportunities";
-import * as RemoteData from "../../../model/remote-data";
 import ErrorPage from "next/error";
 import { openSnackbar } from "../../../state/snackbar";
+import CancelIcon from "@mui/icons-material/Cancel";
+import { useRouter } from "next/router";
 
-interface OpportunityProps {
-  id: number;
-}
+interface OpportunityProps {}
 
 const renderStage = (
   opportunity: OpportunityInfo & Identifiable,
@@ -66,21 +70,50 @@ const renderStage = (
 ) => {
   switch (stage) {
     case "Prospect":
-      return <OpportunityProspect opportunity={opportunity as OpportunityInProspect & Identifiable} />;
+      return (
+        <OpportunityProspect
+          opportunity={opportunity as OpportunityInProspect & Identifiable}
+        />
+      );
     case "First meeting":
-      return <OpportunityFirstMeeting opportunity={opportunity as OpportunityInFirstMeeting & Identifiable} />;
+      return (
+        <OpportunityFirstMeeting
+          opportunity={opportunity as OpportunityInFirstMeeting & Identifiable}
+        />
+      );
     case "Development":
-      return <OpportunityDevelopment opportunity={opportunity as OpportunityInDevelopment & Identifiable} />;
+      return (
+        <OpportunityDevelopment
+          opportunity={opportunity as OpportunityInDevelopment & Identifiable}
+        />
+      );
     case "POC development":
-      return <OpportunityPOCDevelopment opportunity={opportunity as OpportunityInPOCDevelopment & Identifiable} />;
+      return (
+        <OpportunityPOCDevelopment
+          opportunity={
+            opportunity as OpportunityInPOCDevelopment & Identifiable
+          }
+        />
+      );
     case "POC implementation":
-      return <OpportunityPOCImplementation opportunity={opportunity as OpportunityInPOCImplementation & Identifiable} />;
+      return (
+        <OpportunityPOCImplementation
+          opportunity={
+            opportunity as OpportunityInPOCImplementation & Identifiable
+          }
+        />
+      );
     case "Negotiation":
-      return <OpportunityNegotiation opportunity={opportunity as OpportunityInNegotiation & Identifiable} />;
+      return (
+        <OpportunityNegotiation
+          opportunity={opportunity as OpportunityInNegotiation & Identifiable}
+        />
+      );
   }
 };
 
 interface CancelExplanationDialogProps {
+  id: number;
   open: boolean;
   onClose: () => void;
 }
@@ -90,9 +123,11 @@ const validationSchema = yup.object({
 });
 
 const FinalizationExplanationDialog = ({
+  id,
   open,
   onClose,
 }: CancelExplanationDialogProps) => {
+  const dispatch = useAppDispatch();
   const handleClose = () => {
     onClose();
     formik.resetForm();
@@ -104,9 +139,18 @@ const FinalizationExplanationDialog = ({
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values: CancelOpportunityInfo) => {
-      alert(JSON.stringify(values, null, 2));
-      handleClose();
+    onSubmit: async (values: CancelOpportunityInfo) => {
+      try {
+        await dispatch(
+          cancelOpportunity({
+            id,
+            info: values,
+          })
+        );
+        handleClose();
+      } catch (e: any) {
+        dispatch(openSnackbar({ msg: e.message, type: "error" }));
+      }
     },
   });
 
@@ -144,8 +188,17 @@ interface LoadedOpportunityProps {
   opportunity: OpportunityInfo & Identifiable;
 }
 
+function getActiveOpportunityStep(opportunity: OpportunityInfo): StepType {
+  if (opportunity.step === "Canceled")
+    return inferCanceledOpportunityStep(opportunity as CanceledOpportunity);
+  if (opportunity.step === "Completed") return "Prospect";
+  return opportunity.step;
+}
+
 function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
-  const [activeStep, setActiveStep] = useState(steps.indexOf(opportunity.step));
+  const [activeStep, setActiveStep] = useState(
+    steps.indexOf(getActiveOpportunityStep(opportunity))
+  );
   const [dialogOpen, setDialogOpen] = useState(false);
   const dispatch = useAppDispatch();
 
@@ -214,6 +267,14 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
     return stepIndex < steps.indexOf(opportunity.step);
   };
 
+  const stepIsCanceled = (stepIndex: number) => {
+    if (opportunity.step !== "Canceled") return false;
+    const canceledStep = inferCanceledOpportunityStep(
+      opportunity as CanceledOpportunity
+    );
+    return steps.indexOf(canceledStep) <= stepIndex;
+  };
+
   return (
     <>
       <Box sx={{ height: "inherit", overflowY: "scroll" }}>
@@ -223,67 +284,89 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
           </Typography>
           <Box sx={{ width: "100%" }}>
             <Stepper nonLinear activeStep={activeStep}>
-              {steps.slice(0, -1).map((label, index) => (
+              {steps.slice(0, -2).map((label, index) => (
                 <Step
                   key={label}
                   last
-                  completed={stepIsCompleted(index)}
-                  disabled={!stepIsCompleted(index - 1)}
+                  completed={stepIsCompleted(index) && !stepIsCanceled(index)}
+                  disabled={
+                    !stepIsCompleted(index - 1) || stepIsCanceled(index - 1)
+                  }
                 >
-                  <StepButton color="inherit" onClick={handleStep(index)}>
+                  <StepButton
+                    onClick={handleStep(index)}
+                    color="inherit"
+                    icon={
+                      stepIsCanceled(index) && (
+                        <CancelIcon
+                          color={
+                            stepIsCanceled(index - 1) ? "disabled" : "error"
+                          }
+                          fontSize="medium"
+                        />
+                      )
+                    }
+                  >
                     {stepTypeToSpanish(label)}
                   </StepButton>
                 </Step>
               ))}
             </Stepper>
             <div>
-              {!allStepsCompleted() && (
-                <React.Fragment>
-                  <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
-                    <Button
-                      color="inherit"
-                      disabled={activeStep === 0}
-                      onClick={handleBack}
-                      sx={{ mr: 1 }}
-                    >
-                      Anterior
-                    </Button>
-                    <Box sx={{ flex: "1 1 auto" }} />
+              <>
+                <Box sx={{ display: "flex", flexDirection: "row", pt: 2 }}>
+                  <Button
+                    color="inherit"
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    sx={{ mr: 1 }}
+                  >
+                    Anterior
+                  </Button>
+                  <Box sx={{ flex: "1 1 auto" }} />
 
-                    {activeStep !== steps.length &&
-                    !stepIsCompleted(activeStep) ? (
-                      <Grid
-                        container
-                        direction="column"
-                        sx={{ width: "unset" }}
-                      >
-                        <Button onClick={handleComplete}>
-                          Completar etapa
-                        </Button>
-                        <Button onClick={handleOpenDialog} color="error">
-                          Finalizar oportunidad
-                        </Button>
-                      </Grid>
-                    ) : (
-                      <Button
-                        onClick={handleNext}
-                        sx={{ mr: 1 }}
-                        disabled={!stepIsCompleted(activeStep)}
-                      >
-                        Siguiente
+                  {activeStep !== steps.length &&
+                  !stepIsCompleted(activeStep) ? (
+                    <Grid container direction="column" sx={{ width: "unset" }}>
+                      <Button onClick={handleComplete}>Completar etapa</Button>
+                      <Button onClick={handleOpenDialog} color="error">
+                        Finalizar oportunidad
                       </Button>
-                    )}
-                  </Box>
-                </React.Fragment>
-              )}
+                    </Grid>
+                  ) : (
+                    <Button
+                      onClick={handleNext}
+                      sx={{ mr: 1 }}
+                      disabled={
+                        activeStep === steps.length - 3 ||
+                        stepIsCanceled(activeStep) ||
+                        !stepIsCompleted(activeStep)
+                      }
+                    >
+                      Siguiente
+                    </Button>
+                  )}
+                </Box>
+              </>
             </div>
             <Container maxWidth="lg">
-              <Grid container direction="column">
+              <Grid container direction="column" rowSpacing={2}>
                 <Grid item>
-                  <Typography variant="h4" align="center" gutterBottom>
+                  <Typography variant="h4" align="center">
                     {stepTypeToSpanish(steps[activeStep])}
                   </Typography>
                 </Grid>
+                {stepIsCanceled(activeStep) && (
+                  <Grid item>
+                    <Alert severity="error">
+                      <AlertTitle>Oportunidad cancelada</AlertTitle>
+                      {
+                        (opportunity as CanceledOpportunity).cancellationInfo
+                          .reason
+                      }
+                    </Alert>
+                  </Grid>
+                )}
                 <Grid item>{renderStage(opportunity, steps[activeStep])}</Grid>
               </Grid>
             </Container>
@@ -291,6 +374,7 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
         </Container>
       </Box>
       <FinalizationExplanationDialog
+        id={opportunity.id}
         open={dialogOpen}
         onClose={handleCloseDialog}
       />
@@ -298,7 +382,11 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
   );
 }
 
-const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
+const Opportunity: NextPage<OpportunityProps> = () => {
+  const router = useRouter();
+  const { id: rawId } = router.query;
+  const parsedId = parseInt(rawId as string)
+  const id = isNaN(parsedId) ? -1 : parsedId;
   const opportunity = useAppSelector(selectOpportunity(id));
 
   return (
@@ -322,35 +410,6 @@ const Opportunity: NextPage<OpportunityProps> = ({ id }) => {
       )}
     </>
   );
-};
-
-export const getStaticProps: GetStaticProps<OpportunityProps> = async (
-  context
-) => {
-  const rawId = context.params?.id as string;
-  if (!rawId) {
-    return {
-      notFound: true,
-    };
-  }
-  const parsed = parseInt(rawId);
-  if (isNaN(parsed)) {
-    return {
-      notFound: true,
-    };
-  }
-  return {
-    props: {
-      id: parsed,
-    },
-  };
-};
-
-export const getStaticPaths: GetStaticPaths = async () => {
-  return {
-    paths: [],
-    fallback: "blocking",
-  };
 };
 
 export default Opportunity;

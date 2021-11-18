@@ -1,14 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
 import { Form, FormikTextField } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
-import { FirstMeetingInfo, OpportunityInFirstMeeting } from "../model/opportunity";
+import {
+  CanceledOpportunity,
+  FirstMeetingInfo,
+  OpportunityInFirstMeeting,
+} from "../model/opportunity";
 import { useAppDispatch } from "../state/dispatch";
 import { saveOpportunityFirstMeetingInfo } from "../state/opportunities";
 import { openSnackbar } from "../state/snackbar";
-import { dateToISOStringArgentina } from "../common/parse-date";
+import {
+  dateToARGFormat,
+  dateToInputFormat,
+  dateToISOStringArgentina,
+} from "../common/parse-date";
 import { Identifiable } from "../model/base";
 import { InfoTable } from "../common/info-table";
 
@@ -50,27 +58,31 @@ const validationSchema = yup.object({
 
 function formToInfo(form: Form<FirstMeetingInfo>): FirstMeetingInfo {
   return {
-    budgetStatus: form.budgetStatus,
+    ...form,
     employeeAmount: parseInt(form.employeeAmount),
-    locations: form.locations,
     nextMeetingDate: dateToISOStringArgentina(form.nextMeetingDate),
-    notes: form.notes,
-    othersInvolved: form.othersInvolved,
-    problem: form.problem,
     projectDate: dateToISOStringArgentina(form.projectDate),
-    projectDuration: form.projectDuration,
-    projectOwner: form.projectOwner,
+  };
+}
+
+function infoToForm(info: FirstMeetingInfo): Form<FirstMeetingInfo> {
+  return {
+    ...info,
+    employeeAmount: `${info.employeeAmount}`,
+    nextMeetingDate: dateToInputFormat(info.nextMeetingDate),
+    projectDate: dateToInputFormat(info.projectDate),
   };
 }
 
 interface OpportunityFirstMeetingProps {
-  opportunity: OpportunityInFirstMeeting & Identifiable
+  opportunity: (OpportunityInFirstMeeting | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityFirstMeeting({
   opportunity,
 }: OpportunityFirstMeetingProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -85,15 +97,21 @@ export default function OpportunityFirstMeeting({
             info: formToInfo(values),
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(infoToForm(opportunity.firstMeetingInfo!));
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.firstMeetingInfo ? (
+      {opportunity.firstMeetingInfo && !editing ? (
         <InfoTable
           title="Datos de primera reunión"
           titleVariant="h5"
@@ -108,7 +126,9 @@ export default function OpportunityFirstMeeting({
             },
             {
               title: "Próxima reunión",
-              content: new Date(opportunity.firstMeetingInfo.nextMeetingDate).toLocaleDateString(),
+              content: dateToARGFormat(
+                opportunity.firstMeetingInfo.nextMeetingDate
+              ),
             },
             {
               title: "Estado del presupuesto",
@@ -128,130 +148,149 @@ export default function OpportunityFirstMeeting({
             },
             {
               title: "Fecha del proyecto",
-              content: new Date(opportunity.firstMeetingInfo.projectDate).toLocaleDateString(),
+              content: dateToARGFormat(
+                opportunity.firstMeetingInfo.projectDate
+              ),
             },
             {
               title: "Duración del proyecto",
               content: opportunity.firstMeetingInfo.projectDuration,
             },
           ]}
+          onEdit={opportunity.step !== "Canceled" && handleEdit}
         />
       ) : (
-        <Grid
-          container
-          direction="column"
-          justifyContent="center"
-          sx={{ height: "inherit" }}
-        >
-          <Grid item>
-            <form onSubmit={formik.handleSubmit}>
-              <Grid
-                container
-                direction="row"
-                columns={2}
-                columnSpacing={2}
-                rowSpacing={2}
-              >
-                <Grid item xs={2}>
-                  <FormikTextField
-                    name="problem"
-                    label="Problema"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item xs={1} container direction="column" rowSpacing={2}>
-                  <Grid item>
-                    <FormikTextField
-                      name="projectOwner"
-                      label="Project Owner"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="budgetStatus"
-                      label="Estado del presupuesto"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="employeeAmount"
-                      label="Cantidad de empleados"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="locations"
-                      label="Ubicaciones"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                </Grid>
-                <Grid item xs={1} container direction="column" rowSpacing={2}>
-                  <Grid item>
-                    <FormikTextField
-                      name="nextMeetingDate"
-                      label="Próxima reunión"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="othersInvolved"
-                      label="Otros involucrados"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="projectDate"
-                      label="Fecha del proyecto"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <FormikTextField
-                      name="projectDuration"
-                      label="Duración del proyecto"
-                      formik={formik}
-                      validationSchema={validationSchema}
-                    />
-                  </Grid>
-                </Grid>
-                <Grid item xs={2}>
-                  <FormikTextField
-                    name="notes"
-                    label="Notas"
-                    multiline
-                    rows={6}
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item xs={2}>
-                  <Button
-                    fullWidth
-                    color="primary"
-                    variant="contained"
-                    type="submit"
+        <>
+          {opportunity.step !== "Canceled" && (
+            <Grid
+              container
+              direction="column"
+              justifyContent="center"
+              sx={{ height: "inherit" }}
+            >
+              <Grid item>
+                <form onSubmit={formik.handleSubmit}>
+                  <Grid
+                    container
+                    direction="row"
+                    columns={2}
+                    columnSpacing={2}
+                    rowSpacing={2}
                   >
-                    Enviar
-                  </Button>
-                </Grid>
+                    <Grid item xs={2}>
+                      <FormikTextField
+                        name="problem"
+                        label="Problema"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      container
+                      direction="column"
+                      rowSpacing={2}
+                    >
+                      <Grid item>
+                        <FormikTextField
+                          name="projectOwner"
+                          label="Project Owner"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="budgetStatus"
+                          label="Estado del presupuesto"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="employeeAmount"
+                          label="Cantidad de empleados"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="locations"
+                          label="Ubicaciones"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={1}
+                      container
+                      direction="column"
+                      rowSpacing={2}
+                    >
+                      <Grid item>
+                        <FormikTextField
+                          name="nextMeetingDate"
+                          label="Próxima reunión"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="othersInvolved"
+                          label="Otros involucrados"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="projectDate"
+                          label="Fecha del proyecto"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                      <Grid item>
+                        <FormikTextField
+                          name="projectDuration"
+                          label="Duración del proyecto"
+                          formik={formik}
+                          validationSchema={validationSchema}
+                        />
+                      </Grid>
+                    </Grid>
+                    <Grid item xs={2}>
+                      <FormikTextField
+                        name="notes"
+                        label="Notas"
+                        multiline
+                        rows={6}
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item xs={2}>
+                      <Button
+                        fullWidth
+                        color="primary"
+                        variant="contained"
+                        type="submit"
+                      >
+                        Enviar
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
               </Grid>
-            </form>
-          </Grid>
-        </Grid>
+            </Grid>
+          )}
+        </>
       )}
     </>
   );

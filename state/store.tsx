@@ -1,15 +1,48 @@
-import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
+import {
+  configureStore,
+  ThunkAction,
+  Action,
+  combineReducers,
+} from "@reduxjs/toolkit";
+import { persistReducer, persistStore } from "redux-persist";
+import storage from 'redux-persist/lib/storage'
+import * as ReduxPersist from "redux-persist";
 import opportunitiesSlice from "./opportunities";
 import snackbarSlice from "./snackbar";
 
+const persistConfig = {
+  key: "root",
+  storage,
+};
+
+const rootReducer = combineReducers({
+  opportunities: opportunitiesSlice,
+  snackbar: snackbarSlice,
+});
+
+const reducer = persistReducer(persistConfig, rootReducer);
 
 export function makeStore() {
   return configureStore({
-    reducer: { opportunities: opportunitiesSlice, snackbar: snackbarSlice },
+    reducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        serializableCheck: {
+          ignoredActions: [
+            ReduxPersist.FLUSH,
+            ReduxPersist.REHYDRATE,
+            ReduxPersist.PAUSE,
+            ReduxPersist.PERSIST,
+            ReduxPersist.PURGE,
+            ReduxPersist.REGISTER,
+          ],
+        },
+      }),
   });
 }
 
-const store = makeStore();
+export const store = makeStore();
+export const persistor = persistStore(store);
 
 export type AppState = ReturnType<typeof store.getState>;
 
@@ -21,5 +54,3 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   unknown,
   Action<string>
 >;
-
-export default store;

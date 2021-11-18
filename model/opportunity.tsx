@@ -6,6 +6,7 @@ export const steps = [
   "POC implementation",
   "Negotiation",
   "Completed",
+  "Canceled",
 ] as const;
 export const companyTypes = ["Public", "Private", "Non profit"] as const;
 export const regions = [
@@ -94,7 +95,7 @@ export type OpportunityInNegotiation = BaseOpportunityInfo & {
   negotiationInfo?: NegotiationInfo;
 };
 
-export type OpportunityCompleted = BaseOpportunityInfo & {
+export type CompletedOpportunity = BaseOpportunityInfo & {
   step: typeof steps[6];
   contact: Contact;
   firstMeetingInfo: FirstMeetingInfo;
@@ -104,6 +105,17 @@ export type OpportunityCompleted = BaseOpportunityInfo & {
   negotiationInfo: NegotiationInfo;
 };
 
+export type CanceledOpportunity = BaseOpportunityInfo & {
+  step: typeof steps[7];
+  contact?: Contact;
+  firstMeetingInfo?: FirstMeetingInfo;
+  developmentInfo?: DevelopmentInfo;
+  pocDevelopmentInfo?: POCDevelopmentInfo;
+  pocImplementationInfo?: POCImplementationInfo;
+  negotiationInfo?: NegotiationInfo;
+  cancellationInfo: CancelOpportunityInfo;
+};
+
 export type OpportunityInfo =
   | OpportunityInProspect
   | OpportunityInFirstMeeting
@@ -111,9 +123,8 @@ export type OpportunityInfo =
   | OpportunityInPOCDevelopment
   | OpportunityInPOCImplementation
   | OpportunityInNegotiation
-  | OpportunityCompleted;
-
-
+  | CompletedOpportunity
+  | CanceledOpportunity;
 
 export interface Contact {
   name: string;
@@ -164,12 +175,19 @@ export interface NegotiationInfo {
   packs: LicenseRow[];
   paymentMethod: string;
   paymentTerms: string;
-  contract: {
-    filename: string;
-    file: File;
-  };
+  contractFilename: string;
 }
 
 export interface CancelOpportunityInfo {
   reason: string;
+}
+
+export function inferCanceledOpportunityStep(o: CanceledOpportunity): StepType {
+  if (!o.contact) return "Prospect";
+  if (!o.firstMeetingInfo) return "First meeting";
+  if (!o.developmentInfo) return "Development";
+  if (!o.pocDevelopmentInfo) return "POC development";
+  if (!o.pocImplementationInfo) return "POC implementation";
+  if (!o.negotiationInfo) return "Negotiation";
+  throw new Error("Opportunity should not be cancelled");
 }

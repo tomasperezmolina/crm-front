@@ -5,15 +5,16 @@ import React, { useEffect } from "react";
 import Navbar from "../common/navbar";
 
 import type { AppProps } from "next/app";
-import { Alert, Box, Snackbar } from "@mui/material";
+import { Alert, Box, CircularProgress, Snackbar } from "@mui/material";
 import { Provider } from "react-redux";
-import store from "../state/store";
+import { store, persistor } from "../state/store";
 import { useAppDispatch, useAppSelector } from "../state/dispatch";
 import { closeSnackbar, selectSnackbar } from "../state/snackbar";
 import { loadOpportunities, selectOpportunities } from "../state/opportunities";
 import { SessionProvider } from "next-auth/react";
 import { Session } from "next-auth";
 import AuthGuard from "../common/auth-guard";
+import { PersistGate } from "redux-persist/integration/react";
 
 function WrappedApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   const dispatch = useAppDispatch();
@@ -135,10 +136,12 @@ function WrappedApp({ Component, pageProps }: AppProps<{ session: Session }>) {
 
 function MyApp(props: AppProps<{ session: Session }>) {
   return (
-    <Provider store={store}>
-      <SessionProvider session={props.pageProps.session}>
-        <WrappedApp {...props} />
-      </SessionProvider>
+    <Provider store={store}>      
+      <PersistGate loading={<CircularProgress />} persistor={persistor}>
+        <SessionProvider session={props.pageProps.session}>
+          <WrappedApp {...props} />
+        </SessionProvider>
+      </PersistGate>
     </Provider>
   );
 }

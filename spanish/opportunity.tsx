@@ -8,6 +8,7 @@ export function stepTypeToSpanish(s: StepType) {
     case 'POC development': return 'Desarrollo de POC';
     case 'POC implementation': return 'Implementación de POC';
     case 'Negotiation': return 'Negociación';
-    case 'Completed': return 'Completado';
+    case 'Completed': return 'Completada';
+    case 'Canceled': return 'Cancelada';
   }
 }

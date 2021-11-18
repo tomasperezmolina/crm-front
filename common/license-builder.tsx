@@ -33,6 +33,7 @@ import {
   ProgramType,
   programTypes,
 } from "../model/opportunity";
+import { licensePrice } from "../model/pricing";
 
 const validationSchema = yup.object({
   program: yup
@@ -48,10 +49,6 @@ const validationSchema = yup.object({
     .positive("El número de licencias debe ser positivo")
     .required("Se require una cantidad de licencias"),
 });
-
-function licensePrice(program: ProgramType, license: LicenseType) {
-  return 40;
-}
 
 type LicenseTableRow = LicenseRow & {
   id: string;
@@ -480,9 +477,7 @@ export function LicenseTable({
 
   const isSelected = (id: string) => selected.indexOf(id) !== -1;
 
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  const emptyRows = Math.max(0, (1 + page) * rowsPerPage - rows.length);
 
   return (
     <Box sx={{ width: "100%" }}>

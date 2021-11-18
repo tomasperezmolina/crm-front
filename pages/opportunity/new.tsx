@@ -26,6 +26,8 @@ import {
 } from "../../model/opportunity";
 import { useAppDispatch } from "../../state/dispatch";
 import { saveOpportunity } from "../../state/opportunities";
+import { Identifiable } from "../../model/base";
+import { PayloadAction } from "@reduxjs/toolkit";
 
 const maxNotesLenght = 1000;
 
@@ -82,9 +84,9 @@ const NewOpportunity: NextPage<NewOpportunityProps> = () => {
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: (values: NewOpportunityForm) => {
-      dispatch(saveOpportunity(formToData(values)));
-      router.push("/opportunity/0");
+    onSubmit: async (values: NewOpportunityForm) => {
+      const opportunity = await dispatch(saveOpportunity(formToData(values))) as PayloadAction<OpportunityInfo & Identifiable>;
+      router.push(`/opportunity/${opportunity.payload.id}`);
     },
   });
 

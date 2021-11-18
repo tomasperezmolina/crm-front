@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button, Grid } from "@mui/material";
 import * as yup from "yup";
 import { useFormik } from "formik";
@@ -9,6 +9,7 @@ import {
 } from "../common/formik-fields";
 import { formikInitialValues } from "../common/formik-props";
 import {
+  CanceledOpportunity,
   NegotiationInfo,
   OpportunityInNegotiation,
 } from "../model/opportunity";
@@ -33,17 +34,18 @@ const validationSchema = yup.object({
     .required("Se requiere una lista de licencias a probar"),
   paymentMethod: yup.string().required("Se require un método de pago"),
   paymentTerms: yup.string().required("Se require términos de pago"),
-  contract: yup.object().required("Se require un contrato"),
+  contractFilename: yup.string().required("Se require un contrato"),
 });
 
 interface OpportunityNegotiationProps {
-  opportunity: OpportunityInNegotiation & Identifiable;
+  opportunity: (OpportunityInNegotiation | CanceledOpportunity) & Identifiable;
 }
 
 export default function OpportunityNegotiation({
   opportunity,
 }: OpportunityNegotiationProps) {
   const dispatch = useAppDispatch();
+  const [editing, setEditing] = useState(false);
   const formik = useFormik({
     initialValues: formikInitialValues(
       validationSchema.fields,
@@ -58,15 +60,21 @@ export default function OpportunityNegotiation({
             info: values,
           })
         );
+        setEditing(false);
       } catch (e: any) {
         dispatch(openSnackbar({ msg: e.message, type: "error" }));
       }
     },
   });
 
+  const handleEdit = () => {
+    formik.setValues(opportunity.negotiationInfo!);
+    setEditing(true);
+  };
+
   return (
     <>
-      {opportunity.negotiationInfo ? (
+      {opportunity.negotiationInfo && !editing ? (
         <Grid container direction="column" rowSpacing={2}>
           <Grid item>
             <InfoTable
@@ -93,7 +101,12 @@ export default function OpportunityNegotiation({
                   title: "Términos de pago",
                   content: opportunity.negotiationInfo.paymentTerms,
                 },
+                {
+                  title: "Contrato",
+                  content: opportunity.negotiationInfo.contractFilename,
+                },
               ]}
+              onEdit={opportunity.step !== "Canceled" && handleEdit}
             />
           </Grid>
           <Grid item>
@@ -108,85 +121,94 @@ export default function OpportunityNegotiation({
           </Grid>
         </Grid>
       ) : (
-        <Grid
-          container
-          direction="column"
-          justifyContent="center"
-          sx={{ height: "inherit" }}
-          rowSpacing={2}
-        >
-          <Grid item>
-            <FormikLicenseBuilder
-              name="packs"
-              label="Licencias"
-              formik={formik}
-            />
-          </Grid>
-          <Grid item>
-            <form onSubmit={formik.handleSubmit}>
-              <Grid container direction="column" rowSpacing={2}>
-                <Grid item>
-                  <FormikTextField
-                    name="address"
-                    label="Dirección"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="cuit"
-                    label="CUIT"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="socialReason"
-                    label="Razón Social"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="paymentMethod"
-                    label="Medio de pago"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikTextField
-                    name="paymentTerms"
-                    label="Términos de pago"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <FormikFileInput
-                    name="contract"
-                    label="Contrato"
-                    formik={formik}
-                    validationSchema={validationSchema}
-                  />
-                </Grid>
-                <Grid item>
-                  <Button
-                    fullWidth
-                    color="primary"
-                    variant="contained"
-                    type="submit"
-                  >
-                    Enviar
-                  </Button>
-                </Grid>
+        <>
+          {opportunity.step !== "Canceled" && (
+            <Grid
+              container
+              direction="column"
+              justifyContent="center"
+              sx={{ height: "inherit" }}
+              rowSpacing={2}
+            >
+              <Grid item>
+                <FormikLicenseBuilder
+                  name="packs"
+                  label="Licencias"
+                  formik={formik}
+                />
               </Grid>
-            </form>
-          </Grid>
-        </Grid>
+              <Grid item>
+                <form onSubmit={formik.handleSubmit}>
+                  <Grid container direction="column" rowSpacing={2}>
+                    <Grid item>
+                      <FormikTextField
+                        name="address"
+                        label="Dirección"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="cuit"
+                        label="CUIT"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="socialReason"
+                        label="Razón Social"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="paymentMethod"
+                        label="Medio de pago"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikTextField
+                        name="paymentTerms"
+                        label="Términos de pago"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                      />
+                    </Grid>
+                    <Grid item>
+                      <FormikFileInput
+                        name="contractFilename"
+                        label="Contrato"
+                        formik={formik}
+                        validationSchema={validationSchema}
+                        onUpload={() =>
+                          new Promise<void>((resolve) => {
+                            setTimeout(() => resolve(), 1000);
+                          })
+                        }
+                      />
+                    </Grid>
+                    <Grid item>
+                      <Button
+                        fullWidth
+                        color="primary"
+                        variant="contained"
+                        type="submit"
+                      >
+                        Enviar
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
+              </Grid>
+            </Grid>
+          )}
+        </>
       )}
     </>
   );
