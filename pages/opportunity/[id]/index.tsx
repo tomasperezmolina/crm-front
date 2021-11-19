@@ -21,7 +21,6 @@ import {
 import {
   CanceledOpportunity,
   CancelOpportunityForm,
-  CancelOpportunityInfo,
   inferCanceledOpportunityStep,
   OpportunityInDevelopment,
   OpportunityInFirstMeeting,
@@ -57,6 +56,14 @@ import ErrorPage from "next/error";
 import { openSnackbar } from "../../../state/snackbar";
 import CancelIcon from "@mui/icons-material/Cancel";
 import { useRouter } from "next/router";
+import {
+  DEVELOPMENT_DATA_MISSING,
+  FIRST_MEETING_DATA_MISSING,
+  NEGOTIATION_DATA_MISSING,
+  POC_DEVELOPMENT_DATA_MISSING,
+  POC_IMPLEMENTATION_DATA_MISSING,
+  PROSPECT_DATA_MISSING,
+} from "../../../common/error-messages";
 
 interface OpportunityProps {}
 
@@ -233,6 +240,34 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
 
   const handleComplete = async () => {
     try {
+      switch (opportunity.step) {
+        case "Prospect":
+          if (!opportunity.contact) throw new Error(PROSPECT_DATA_MISSING);
+          break;
+        case "First meeting":
+          if (!(opportunity as OpportunityInFirstMeeting).firstMeetingInfo)
+            throw new Error(FIRST_MEETING_DATA_MISSING);
+          break;
+        case "Development":
+          if (!(opportunity as OpportunityInDevelopment).developmentInfo)
+            throw new Error(DEVELOPMENT_DATA_MISSING);
+          break;
+        case "POC development":
+          if (!(opportunity as OpportunityInPOCDevelopment).pocDevelopmentInfo)
+            throw new Error(POC_DEVELOPMENT_DATA_MISSING);
+          break;
+        case "POC implementation":
+          if (
+            !(opportunity as OpportunityInPOCImplementation)
+              .pocImplementationInfo
+          )
+            throw new Error(POC_IMPLEMENTATION_DATA_MISSING);
+          break;
+        case "Negotiation":
+          if (!(opportunity as OpportunityInNegotiation).negotiationInfo)
+            throw new Error(NEGOTIATION_DATA_MISSING);
+          break;
+      }
       await dispatch(advanceOpportunityStage(opportunity));
       handleNext();
     } catch (e: any) {
