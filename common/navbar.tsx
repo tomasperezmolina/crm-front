@@ -32,6 +32,10 @@ export default function Navbar() {
   };
   const handleOpportunityClick = () => {
     handleClose();
+    router.push("/opportunity");
+  };
+  const handleIndicatorsClick = () => {
+    handleClose();
     router.push("/");
   };
   const handleArchiveClick = () => {
@@ -67,6 +71,7 @@ export default function Navbar() {
             }}
           >
             <MenuItem onClick={handleOpportunityClick}>Oportunidades</MenuItem>
+            <MenuItem onClick={handleIndicatorsClick}>Indicadores</MenuItem>
             <MenuItem onClick={handleArchiveClick}>Archivadas</MenuItem>
             <MenuItem onClick={handleReset}>Borrar datos (DEBUG)</MenuItem>
             <MenuItem onClick={handleLogoutClick}>Cerrar sesión</MenuItem>
