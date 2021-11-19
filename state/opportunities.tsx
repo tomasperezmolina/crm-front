@@ -394,6 +394,7 @@ const opportunitiesSlice = createSlice({
       .addMatcher(
         isFulfilled(
           saveOpportunityContact,
+          saveOpportunityFirstMeetingInfo,
           saveOpportunityDevelopmentInfo,
           saveOpportunityPOCDevelopmentInfo,
           saveOpportunityPOCImplementationInfo,
