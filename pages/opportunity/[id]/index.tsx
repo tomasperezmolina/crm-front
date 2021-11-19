@@ -233,7 +233,7 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
 
   const handleComplete = async () => {
     try {
-      await dispatch(advanceOpportunityStage(opportunity.id));
+      await dispatch(advanceOpportunityStage(opportunity));
       handleNext();
     } catch (e: any) {
       dispatch(openSnackbar({ msg: e.message, type: "error" }));
@@ -362,7 +362,7 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
 const Opportunity: NextPage<OpportunityProps> = () => {
   const router = useRouter();
   const { id: rawId } = router.query;
-  const parsedId = parseInt(rawId as string)
+  const parsedId = parseInt(rawId as string);
   const id = isNaN(parsedId) ? -1 : parsedId;
   const opportunity = useAppSelector(selectOpportunity(id));
 

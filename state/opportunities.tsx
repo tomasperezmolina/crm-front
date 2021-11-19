@@ -5,9 +5,15 @@ import {
   PayloadAction,
 } from "@reduxjs/toolkit";
 import {
+  DEVELOPMENT_DATA_MISSING,
+  FIRST_MEETING_DATA_MISSING,
   GENERIC_ERROR,
   INVALID_SOURCE_STEP,
+  NEGOTIATION_DATA_MISSING,
   OPPORTUNITY_NOT_FOUND,
+  POC_DEVELOPMENT_DATA_MISSING,
+  POC_IMPLEMENTATION_DATA_MISSING,
+  PROSPECT_DATA_MISSING,
 } from "../common/error-messages";
 import { Identifiable } from "../model/base";
 import {
@@ -23,6 +29,11 @@ import {
   StepType,
   CanceledOpportunity,
   CancelOpportunityForm,
+  OpportunityInFirstMeeting,
+  OpportunityInDevelopment,
+  OpportunityInPOCDevelopment,
+  OpportunityInPOCImplementation,
+  OpportunityInNegotiation,
 } from "../model/opportunity";
 import * as RemoteData from "../model/remote-data";
 import { NewOpportunityData } from "../pages/opportunity/new";
@@ -35,6 +46,7 @@ import {
   pocDevelopmentInfoToServerForm,
   ServerOpportunity,
 } from "./server-parsing";
+import { openSnackbar } from "./snackbar";
 
 import type { AppState } from "./store";
 
@@ -110,7 +122,6 @@ export const saveOpportunityContact = createAsyncThunk<
   { id: number; contact: Contact },
   { state: AppState }
 >("opportunities/saveOpportunityContact", async (payload, thunkApi) => {
-  console.log('saveing contact');
   const token = thunkApi.getState().session.session?.accessToken as string;
   const createResponse = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/clientcontact`,
@@ -264,23 +275,49 @@ export const cancelOpportunity = createAsyncThunk<
 
 export const advanceOpportunityStage = createAsyncThunk<
   OpportunityInfo & Identifiable,
-  number,
+  OpportunityInfo & Identifiable,
   { state: AppState }
 >("opportunities/advanceOpportunityStage", async (payload, thunkApi) => {
-  const token = thunkApi.getState().session.session?.accessToken as string;
-  const createResponse = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({newOwner: 96}),
+  try {
+    switch (payload.step) {
+      case "Prospect":
+        if (!payload.contact) throw new Error(PROSPECT_DATA_MISSING);
+      case "First meeting":
+        if (!(payload as OpportunityInFirstMeeting).firstMeetingInfo)
+          throw new Error(FIRST_MEETING_DATA_MISSING);
+      case "Development":
+        if (!(payload as OpportunityInDevelopment).developmentInfo)
+          throw new Error(DEVELOPMENT_DATA_MISSING);
+      case "POC development":
+        if (!(payload as OpportunityInPOCDevelopment).pocDevelopmentInfo)
+          throw new Error(POC_DEVELOPMENT_DATA_MISSING);
+      case "POC implementation":
+        if (!(payload as OpportunityInPOCImplementation).pocImplementationInfo)
+          throw new Error(POC_IMPLEMENTATION_DATA_MISSING);
+      case "Negotiation":
+        if (!(payload as OpportunityInNegotiation).negotiationInfo)
+          throw new Error(NEGOTIATION_DATA_MISSING);
     }
-  );
-  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
-  return await fetchOpportunity(token, payload);
+    const session = thunkApi.getState().session.session!;
+    const token = session.accessToken as string;
+    const userId = session.id as number;
+    const createResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ newOwner: userId }),
+      }
+    );
+    if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+    return await fetchOpportunity(token, payload.id);
+  } catch (e: any) {
+    thunkApi.dispatch(openSnackbar({ msg: e.message, type: "error" }));
+    throw e;
+  }
 });
 
 function findWithIndex<T>(
@@ -356,7 +393,7 @@ const opportunitiesSlice = createSlice({
           saveOpportunityPOCImplementationInfo,
           saveOpportunityNegotiationInfo,
           cancelOpportunity,
-          advanceOpportunityStage,
+          advanceOpportunityStage
         ),
         (state, action) => {
           updateOpportunityInState(state, action);

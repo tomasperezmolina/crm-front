@@ -447,7 +447,7 @@ export function opportunityInfoFromServerOpportunity(
 
 interface FirstMeetingServerForm {
   employeeAmount: number;
-  projectDuration: number;
+  projectDuration: string;
   budgetStatus: string;
   locations: string;
   nextMeeting: string;
@@ -463,7 +463,7 @@ export function firstMeetingInfoToServerForm(
 ): FirstMeetingServerForm {
   return {
     employeeAmount: info.employeeAmount,
-    projectDuration: 0,
+    projectDuration: info.projectDuration,
     budgetStatus: info.budgetStatus,
     locations: info.locations,
     nextMeeting: toServerDate(info.nextMeetingDate),

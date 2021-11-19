@@ -55,11 +55,15 @@ export default NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.accessToken = user.jwt;
+        token.data = user;
+        token.id = user.id;
       }
       return token;
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken;
+      session.data = token.user;
+      session.id = token.id;
       return session;
     },
   },
