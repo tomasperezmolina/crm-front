@@ -41,7 +41,7 @@ export default function Navbar() {
   };
   const handleIndicatorsClick = () => {
     handleClose();
-    router.push("/opportunity");
+    router.push("/");
   };
   const handleArchiveClick = () => {
     handleClose();
