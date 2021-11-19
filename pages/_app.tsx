@@ -29,13 +29,10 @@ function WrappedApp({ Component, pageProps }: AppProps<{ session: Session }>) {
   const { data: session } = useSession({required: false});
   useEffect(() => {
     dispatch(setSession(session));
-  }, [dispatch, session]);
-  const opportunities = useAppSelector(selectOpportunities);
-  useEffect(() => {
-    if (opportunities.state === "not-asked") {
+    if (session) {
       dispatch(loadOpportunities());
     }
-  }, [dispatch, opportunities]);
+  }, [dispatch, session]);
 
   return (
     <>

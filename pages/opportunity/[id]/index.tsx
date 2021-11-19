@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import {
   CanceledOpportunity,
+  CancelOpportunityForm,
   CancelOpportunityInfo,
   inferCanceledOpportunityStep,
   OpportunityInDevelopment,
@@ -48,14 +49,9 @@ import { formikInitialValues } from "../../../common/formik-props";
 import { Identifiable } from "../../../model/base";
 import { useAppDispatch, useAppSelector } from "../../../state/dispatch";
 import {
+  advanceOpportunityStage,
   cancelOpportunity,
-  completeOpportunity,
   selectOpportunity,
-  sendOpportunityToDevelopment,
-  sendOpportunityToFirstMeeting,
-  sendOpportunityToNegotiation,
-  sendOpportunityToPOCDevelopment,
-  sendOpportunityToPOCImplementation,
 } from "../../../state/opportunities";
 import ErrorPage from "next/error";
 import { openSnackbar } from "../../../state/snackbar";
@@ -139,7 +135,7 @@ const FinalizationExplanationDialog = ({
       validationSchema
     ),
     validationSchema: validationSchema,
-    onSubmit: async (values: CancelOpportunityInfo) => {
+    onSubmit: async (values: CancelOpportunityForm) => {
       try {
         await dispatch(
           cancelOpportunity({
@@ -237,26 +233,7 @@ function LoadedOpportunity({ opportunity }: LoadedOpportunityProps) {
 
   const handleComplete = async () => {
     try {
-      switch (steps[activeStep]) {
-        case "Prospect":
-          await dispatch(sendOpportunityToFirstMeeting(opportunity.id));
-          break;
-        case "First meeting":
-          await dispatch(sendOpportunityToDevelopment(opportunity.id));
-          break;
-        case "Development":
-          await dispatch(sendOpportunityToPOCDevelopment(opportunity.id));
-          break;
-        case "POC development":
-          await dispatch(sendOpportunityToPOCImplementation(opportunity.id));
-          break;
-        case "POC implementation":
-          await dispatch(sendOpportunityToNegotiation(opportunity.id));
-          break;
-        case "Negotiation":
-          await dispatch(completeOpportunity(opportunity.id));
-          break;
-      }
+      await dispatch(advanceOpportunityStage(opportunity.id));
       handleNext();
     } catch (e: any) {
       dispatch(openSnackbar({ msg: e.message, type: "error" }));

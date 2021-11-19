@@ -1,7 +1,11 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BaseThunkAPI } from "@reduxjs/toolkit/dist/createAsyncThunk";
-import moment from "moment";
 import {
+  createAsyncThunk,
+  createSlice,
+  isFulfilled,
+  PayloadAction,
+} from "@reduxjs/toolkit";
+import {
+  GENERIC_ERROR,
   INVALID_SOURCE_STEP,
   OPPORTUNITY_NOT_FOUND,
 } from "../common/error-messages";
@@ -11,30 +15,26 @@ import {
   Contact,
   DevelopmentInfo,
   FirstMeetingInfo,
-  LicenseType,
   NegotiationInfo,
-  CancelOpportunityInfo,
-  CompletedOpportunity,
-  OpportunityInDevelopment,
-  OpportunityInFirstMeeting,
   OpportunityInfo,
-  OpportunityInNegotiation,
-  OpportunityInPOCDevelopment,
-  OpportunityInPOCImplementation,
-  OpportunityInProspect,
   POCDevelopmentInfo,
   POCImplementationInfo,
-  ProgramType,
   steps,
   StepType,
   CanceledOpportunity,
-  Industry,
-  CompanyType,
-  Region,
+  CancelOpportunityForm,
 } from "../model/opportunity";
-import { licensePrice } from "../model/pricing";
 import * as RemoteData from "../model/remote-data";
 import { NewOpportunityData } from "../pages/opportunity/new";
+import {
+  contactToServerForm,
+  developmentInfoToServerForm,
+  firstMeetingInfoToServerForm,
+  negotiationInfoToOrderForm,
+  opportunityInfoFromServerOpportunity,
+  pocDevelopmentInfoToServerForm,
+  ServerOpportunity,
+} from "./server-parsing";
 
 import type { AppState } from "./store";
 
@@ -46,343 +46,242 @@ const initialState: OpportunitiesState = {
   list: RemoteData.notAsked(),
 };
 
-function generateId() {
-  return Math.floor(Math.random() * 10000);
-}
+export const loadOpportunities = createAsyncThunk<
+  (OpportunityInfo & Identifiable)[],
+  void,
+  { state: AppState }
+>("opportunities/loadOpportunities", async (_arg, thunkApi) => {
+  const token = thunkApi.getState().session.session?.accessToken;
+  const getResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!getResponse.ok) throw new Error(GENERIC_ERROR);
+  return (await getResponse.json()).map(opportunityInfoFromServerOpportunity);
+});
 
-function mockProspectCompany(
-  name: string
-): OpportunityInProspect & Identifiable {
-  return {
-    id: generateId(),
-    name,
-    companyType: "Private",
-    region: "North America",
-    industry: "Manufacture",
-    webpage: "https://formik.org/docs/api/field",
-    step: "Prospect",
-    notes:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-  };
-}
-
-function mockFirstMeetingCompany(
-  name: string
-): OpportunityInFirstMeeting & Identifiable {
-  return {
-    ...mockProspectCompany(name),
-    step: "First meeting",
-    contact: {
-      name: "Pedro",
-      surname: "Perez",
-      email: "perez@mail.com",
-      linkedin: `https://www.linkedin.com/in/pedro-perez-0a${generateId()}/`,
-      phone: "01161513562",
-    },
-  };
-}
-
-function mockDevelopmentCompany(
-  name: string
-): OpportunityInDevelopment & Identifiable {
-  return {
-    ...mockFirstMeetingCompany(name),
-    step: "Development",
-    firstMeetingInfo: {
-      problem: "Un problema complicado",
-      budgetStatus:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-      employeeAmount: 200,
-      locations: "Buenos Aires, Santa Fe, CABA",
-      nextMeetingDate: moment().add(1, "week").toISOString(),
-      projectDate: moment().add(3, "months").toISOString(),
-      notes:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-      projectOwner: "Marty McFly",
-      othersInvolved: "Jeff Bezos, Elon Musk",
-      projectDuration: "Q4 2022",
-    },
-  };
-}
-
-function mockPack(program: ProgramType, license: LicenseType, amount: number) {
-  return {
-    license,
-    program,
-    pricePerUnit: licensePrice(program, license),
-    amount: amount,
-  };
-}
-
-function mockPOCDevelopmentCompany(
-  name: string
-): OpportunityInPOCDevelopment & Identifiable {
-  return {
-    ...mockDevelopmentCompany(name),
-    step: "POC development",
-    developmentInfo: {
-      principalArea: "Recursos Humanos",
-      notes:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-      packs: [
-        mockPack("Excel", "Home", 20),
-        mockPack("Word", "Pro", 10),
-        mockPack("Excel", "Pro", 50),
-        mockPack("Outlook", "Home", 80),
-      ],
-    },
-  };
-}
-
-function mockPOCImplementationCompany(
-  name: string
-): OpportunityInPOCImplementation & Identifiable {
-  return {
-    ...mockPOCDevelopmentCompany(name),
-    step: "POC implementation",
-    pocDevelopmentInfo: {
-      packs: [
-        mockPack("Excel", "Home", 5),
-        mockPack("Excel", "Pro", 2),
-        mockPack("Word", "Home", 10),
-        mockPack("Word", "Pro", 5),
-        mockPack("Outlook", "Home", 2),
-      ],
-      startDate: moment().add(3, "weeks").toISOString(),
-      endDate: moment().add(3, "weeks").add(1, "month").toISOString(),
-      location: "San Martín 2405, Capital Federal",
-      successCriteria:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-      notes:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-    },
-  };
-}
-
-function mockNegotiationCompany(
-  name: string
-): OpportunityInNegotiation & Identifiable {
-  return {
-    ...mockPOCImplementationCompany(name),
-    step: "Negotiation",
-    pocImplementationInfo: {
-      uxRating: 4,
-      processRating: 5,
-      notes:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vel ante eget dolor luctus mollis quis ac libero.",
-    },
-  };
-}
-
-function mockCompletedCompany(
-  name: string
-): CompletedOpportunity & Identifiable {
-  const previousData = mockNegotiationCompany(name);
-  return {
-    ...previousData,
-    step: "Completed",
-    negotiationInfo: {
-      cuit: "20431533450",
-      socialReason: "MOCK S.A.",
-      address: "Cabildo 1240, CABA",
-      paymentMethod: "Transferencia",
-      paymentTerms: "24 cuotas",
-      packs: previousData.developmentInfo.packs,
-      contractFilename: "contrato.pdf",
-    },
-  };
-}
-
-function mockCancelOpportunity(
-  o: OpportunityInfo & Identifiable
-): CanceledOpportunity & Identifiable {
-  return {
-    ...o,
-    step: "Canceled",
-    cancellationInfo: {
-      reason: "Razón de cancelación",
-    },
-  };
-}
-
-export const loadOpportunities = createAsyncThunk(
-  "opportunities/loadOpportunities",
-  async () => {
-    await new Promise<void>((resolve) => {
-      setTimeout(() => resolve(), 1000);
-    });
-    return [
-      mockProspectCompany("Danone"),
-      mockProspectCompany("Accenture"),
-      mockProspectCompany("Serenísima"),
-      mockProspectCompany("Bayer"),
-      mockFirstMeetingCompany("Freddo"),
-      mockFirstMeetingCompany("Salesforce"),
-      mockFirstMeetingCompany("Drixit"),
-      mockDevelopmentCompany("Tesla"),
-      mockDevelopmentCompany("Microsoft"),
-      mockDevelopmentCompany("Apple"),
-      mockDevelopmentCompany("Dell"),
-      mockDevelopmentCompany("Coca-Cola"),
-      mockDevelopmentCompany("ASUS"),
-      mockPOCDevelopmentCompany("Discord"),
-      mockPOCDevelopmentCompany("Unilever"),
-      mockPOCImplementationCompany("Logitech"),
-      mockPOCImplementationCompany("PepsiCo"),
-      mockPOCImplementationCompany("Nike"),
-      mockPOCImplementationCompany("ZARA"),
-      mockPOCImplementationCompany("Yamaha"),
-      mockNegotiationCompany("Aukey"),
-      mockNegotiationCompany("GUESS"),
-      mockNegotiationCompany("LG"),
-      mockNegotiationCompany("Adidas"),
-      mockNegotiationCompany("Blizzard"),
-      mockCompletedCompany("Mulesoft"),
-      mockCompletedCompany("OnePlus"),
-      mockCompletedCompany("Samsung"),
-      mockCompletedCompany("Facebook"),
-      mockCompletedCompany("Twitter"),
-      mockCompletedCompany("Converse"),
-      mockCompletedCompany("Penguin"),
-      mockCompletedCompany("Levy's"),
-      mockCompletedCompany("CASIO"),
-      mockCancelOpportunity(mockDevelopmentCompany("NOKIA")),
-      mockCancelOpportunity(mockDevelopmentCompany("BlackBerry")),
-      mockCancelOpportunity(mockPOCDevelopmentCompany("Timberland")),
-      mockCancelOpportunity(mockProspectCompany("Guaymallén")),
-      mockCancelOpportunity(mockPOCImplementationCompany("Disney")),
-      mockCancelOpportunity(mockFirstMeetingCompany("General Motors")),
-    ];
-  }
-);
-
-interface ServerOpportunity {
-    id: number,
-    currentOwner: {
-        id: number,
-        name: string,
-        lastName: string,
-        email: string,
-        active: boolean,
-        type: "ADMIN"
-    },
-    client: {
-        id: string,
-        name: string,
-        webpage: string,
-        industry: Industry,
-        companyType: CompanyType,
-        region: Region,
-        notes: string,
-        clientContacts: [],
-        owner: {
-            id: number,
-            name: string,
-            lastName: string,
-            email: string,
-            active: true,
-            type: "ADMIN"
-        }
-    },
-    firstMeeting: {
-        id: number,
-        notes: string,
-        projectOwner: string,
-        nextMeeting: string,
-        othersInvolved: string,
-        problem: string,
-        employeeAmount: number,
-        budgetStatus: string,
-        locations: string,
-        projectDate: string,
-        projectDuration: string,
-        owner: string
-    },
-    development: {
-        id: number,
-        principalArea: string,
-        notes: string,
-        packs: [],
-        owner: string
-    },
-    pocDevelopment: {
-        id: number,
-        startDate: string,
-        endDate: string,
-        location: string,
-        successCriteria: string,
-        notes: string,
-        packs: [],
-        owner: string
-    },
-    pocInstallation: {
-        id: number,
-        notes: string,
-        uxRating: number,
-        processRating: number,
-        owner: string
-    },
-    order: {
-        id: number,
-        cuit: string,
-        socialReason: string,
-        address: string,
-        paymentMethod: string,
-        paymentTerms: string,
-        packs: [],
-        owner: string
-    },
-    cancel: {
-        id: number,
-        reason: string,
-        prevStage: string,
-        owner: string
-    },
-    stage: "PROSPECT",
-    doneDate: string
-}
-
-function opportunityInProspectFromServerOp(serverOp: ServerOpportunity): OpportunityInProspect & Identifiable {
-  return {
-    id: serverOp.id,
-    industry: serverOp.client.industry,
-    name: serverOp.client.name,
-    webpage: serverOp.client.webpage,
-    companyType: serverOp.client.companyType,
-    region: serverOp.client.region,
-    notes: serverOp.client.notes,
-    step: 'Prospect',
-  };
+async function fetchOpportunity(token: string, id: number) {
+  const getResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  if (!getResponse.ok) throw new Error(GENERIC_ERROR);
+  const serverOpportunity: ServerOpportunity = await getResponse.json();
+  return opportunityInfoFromServerOpportunity(serverOpportunity);
 }
 
 export const saveOpportunity = createAsyncThunk<
   OpportunityInfo & Identifiable,
   NewOpportunityData,
   { state: AppState }
+>("opportunities/saveOpportunity", async (opportunity, thunkApi) => {
+  const token = thunkApi.getState().session.session?.accessToken;
+  const createResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(opportunity),
+    }
+  );
+  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+  const getResponse = await fetch(createResponse.headers.get("Location")!, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const serverOpportunity: ServerOpportunity = await getResponse.json();
+  return opportunityInfoFromServerOpportunity(serverOpportunity);
+});
+
+export const saveOpportunityContact = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; contact: Contact },
+  { state: AppState }
+>("opportunities/saveOpportunityContact", async (payload, thunkApi) => {
+  console.log('saveing contact');
+  const token = thunkApi.getState().session.session?.accessToken as string;
+  const createResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/clientcontact`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(contactToServerForm(payload.contact)),
+    }
+  );
+  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+  return await fetchOpportunity(token, payload.id);
+});
+
+export const saveOpportunityFirstMeetingInfo = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; info: FirstMeetingInfo },
+  { state: AppState }
 >(
-  "opportunities/saveOpportunity",
-  async (opportunity: NewOpportunityData, thunkApi) => {
-    const token = thunkApi.getState().session.session?.accessToken;
+  "opportunities/saveOpportunityFirstMeetingInfo",
+  async (payload, thunkApi) => {
+    const token = thunkApi.getState().session.session?.accessToken as string;
     const createResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/opportunity`,
+      `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/firstmeeting`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(opportunity),
+        body: JSON.stringify(firstMeetingInfoToServerForm(payload.info)),
       }
     );
-    const getResponse = await fetch(createResponse.headers.get("Location")!, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const serverOpportunity: ServerOpportunity = await getResponse.json();
-    return opportunityInProspectFromServerOp(serverOpportunity);
+    if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+    return await fetchOpportunity(token, payload.id);
   }
 );
+
+export const saveOpportunityDevelopmentInfo = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; info: DevelopmentInfo },
+  { state: AppState }
+>("opportunities/saveOpportunityDevelopmentInfo", async (payload, thunkApi) => {
+  const token = thunkApi.getState().session.session?.accessToken as string;
+  const createResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/development`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(developmentInfoToServerForm(payload.info)),
+    }
+  );
+  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+  return await fetchOpportunity(token, payload.id);
+});
+
+export const saveOpportunityPOCDevelopmentInfo = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; info: POCDevelopmentInfo },
+  { state: AppState }
+>(
+  "opportunities/saveOpportunityPOCDevelopmentInfo",
+  async (payload, thunkApi) => {
+    const token = thunkApi.getState().session.session?.accessToken as string;
+    const createResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/pocdevelopment`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(pocDevelopmentInfoToServerForm(payload.info)),
+      }
+    );
+    if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+    return await fetchOpportunity(token, payload.id);
+  }
+);
+
+export const saveOpportunityPOCImplementationInfo = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; info: POCImplementationInfo },
+  { state: AppState }
+>(
+  "opportunities/saveOpportunityPOCImplementationInfo",
+  async (payload, thunkApi) => {
+    const token = thunkApi.getState().session.session?.accessToken as string;
+    const createResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/pocinstallation`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload.info),
+      }
+    );
+    if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+    return await fetchOpportunity(token, payload.id);
+  }
+);
+
+export const saveOpportunityNegotiationInfo = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; info: NegotiationInfo },
+  { state: AppState }
+>("opportunities/saveOpportunityNegotiationInfo", async (payload, thunkApi) => {
+  const token = thunkApi.getState().session.session?.accessToken as string;
+  const createResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/order`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(negotiationInfoToOrderForm(payload.info)),
+    }
+  );
+  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+  return await fetchOpportunity(token, payload.id);
+});
+
+export const cancelOpportunity = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  { id: number; info: CancelOpportunityForm },
+  { state: AppState }
+>("opportunities/cancelOpportunity", async (payload, thunkApi) => {
+  const token = thunkApi.getState().session.session?.accessToken as string;
+  const createResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload.id}/cancel`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload.info),
+    }
+  );
+  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+  return await fetchOpportunity(token, payload.id);
+});
+
+export const advanceOpportunityStage = createAsyncThunk<
+  OpportunityInfo & Identifiable,
+  number,
+  { state: AppState }
+>("opportunities/advanceOpportunityStage", async (payload, thunkApi) => {
+  const token = thunkApi.getState().session.session?.accessToken as string;
+  const createResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/opportunity/${payload}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({newOwner: 96}),
+    }
+  );
+  if (!createResponse.ok) throw new Error(GENERIC_ERROR);
+  return await fetchOpportunity(token, payload);
+});
 
 function findWithIndex<T>(
   list: readonly T[],
@@ -401,24 +300,6 @@ type ElementKeys = keyof Omit<
   Omit<CanceledOpportunity, keyof BaseOpportunityInfo>,
   "step"
 >;
-
-function saveElement<T extends ElementKeys>(
-  state: OpportunitiesState,
-  id: number,
-  elementKey: T,
-  element: CanceledOpportunity[T]
-) {
-  return RemoteData.map(state.list, (os) => {
-    const { element: o, indexOf } = findWithIndex(os, (o) => o.id === id);
-    if (!o) throw new Error(OPPORTUNITY_NOT_FOUND);
-    const newOpportunities = [...os];
-    newOpportunities[indexOf] = {
-      ...o,
-      [elementKey]: element,
-    };
-    return newOpportunities;
-  });
-}
 
 function stateTransition(
   state: OpportunitiesState,
@@ -447,146 +328,11 @@ function stateTransition(
 const opportunitiesSlice = createSlice({
   name: "opportunities",
   initialState,
-  reducers: {
-    saveOpportunityContact: (
-      state,
-      action: PayloadAction<{ id: number; contact: Contact }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "contact",
-        action.payload.contact
-      );
-    },
-    sendOpportunityToFirstMeeting: (state, action: PayloadAction<number>) => {
-      state.list = stateTransition(
-        state,
-        action.payload,
-        "First meeting",
-        "contact"
-      );
-    },
-    saveOpportunityFirstMeetingInfo: (
-      state,
-      action: PayloadAction<{ id: number; info: FirstMeetingInfo }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "firstMeetingInfo",
-        action.payload.info
-      );
-    },
-    sendOpportunityToDevelopment: (state, action: PayloadAction<number>) => {
-      state.list = stateTransition(
-        state,
-        action.payload,
-        "Development",
-        "firstMeetingInfo"
-      );
-    },
-    saveOpportunityDevelopmentInfo: (
-      state,
-      action: PayloadAction<{ id: number; info: DevelopmentInfo }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "developmentInfo",
-        action.payload.info
-      );
-    },
-    sendOpportunityToPOCDevelopment: (state, action: PayloadAction<number>) => {
-      state.list = stateTransition(
-        state,
-        action.payload,
-        "POC development",
-        "developmentInfo"
-      );
-    },
-    saveOpportunityPOCDevelopmentInfo: (
-      state,
-      action: PayloadAction<{ id: number; info: POCDevelopmentInfo }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "pocDevelopmentInfo",
-        action.payload.info
-      );
-    },
-    sendOpportunityToPOCImplementation: (
-      state,
-      action: PayloadAction<number>
-    ) => {
-      state.list = stateTransition(
-        state,
-        action.payload,
-        "POC implementation",
-        "pocDevelopmentInfo"
-      );
-    },
-    saveOpportunityPOCImplementationInfo: (
-      state,
-      action: PayloadAction<{ id: number; info: POCImplementationInfo }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "pocImplementationInfo",
-        action.payload.info
-      );
-    },
-    sendOpportunityToNegotiation: (state, action: PayloadAction<number>) => {
-      state.list = stateTransition(
-        state,
-        action.payload,
-        "Negotiation",
-        "pocImplementationInfo"
-      );
-    },
-    saveOpportunityNegotiationInfo: (
-      state,
-      action: PayloadAction<{ id: number; info: NegotiationInfo }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "negotiationInfo",
-        action.payload.info
-      );
-    },
-    completeOpportunity: (state, action: PayloadAction<number>) => {
-      state.list = stateTransition(
-        state,
-        action.payload,
-        "Completed",
-        "negotiationInfo"
-      );
-    },
-    cancelOpportunity: (
-      state,
-      action: PayloadAction<{ id: number; info: CancelOpportunityInfo }>
-    ) => {
-      state.list = saveElement(
-        state,
-        action.payload.id,
-        "cancellationInfo",
-        action.payload.info
-      );
-      state.list = stateTransition(
-        state,
-        action.payload.id,
-        "Canceled",
-        "cancellationInfo"
-      );
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(loadOpportunities.rejected, (state, action) => {
-        state.list = RemoteData.error(action.error.message || "UNKNOWN_ERROR");
+        state.list = RemoteData.error(action.error.message || GENERIC_ERROR);
       })
       .addCase(loadOpportunities.pending, (state) => {
         state.list = RemoteData.loading();
@@ -601,25 +347,23 @@ const opportunitiesSlice = createSlice({
             action.payload,
           ]);
         }
-      });
+      })
+      .addMatcher(
+        isFulfilled(
+          saveOpportunityContact,
+          saveOpportunityDevelopmentInfo,
+          saveOpportunityPOCDevelopmentInfo,
+          saveOpportunityPOCImplementationInfo,
+          saveOpportunityNegotiationInfo,
+          cancelOpportunity,
+          advanceOpportunityStage,
+        ),
+        (state, action) => {
+          updateOpportunityInState(state, action);
+        }
+      );
   },
 });
-
-export const {
-  saveOpportunityContact,
-  saveOpportunityDevelopmentInfo,
-  saveOpportunityFirstMeetingInfo,
-  saveOpportunityNegotiationInfo,
-  saveOpportunityPOCDevelopmentInfo,
-  saveOpportunityPOCImplementationInfo,
-  sendOpportunityToFirstMeeting,
-  sendOpportunityToDevelopment,
-  sendOpportunityToNegotiation,
-  sendOpportunityToPOCDevelopment,
-  sendOpportunityToPOCImplementation,
-  completeOpportunity,
-  cancelOpportunity,
-} = opportunitiesSlice.actions;
 
 export const selectOpportunities = (state: AppState) =>
   state.opportunities.list;
@@ -633,8 +377,24 @@ export const selectOpportunity =
       const opportunity = os.find((o) => o.id === id);
       if (opportunity) return RemoteData.success(opportunity);
       else {
-        return RemoteData.error("OPPORTUNITY_NOT_FOUND");
+        return RemoteData.error(OPPORTUNITY_NOT_FOUND);
       }
     });
 
 export default opportunitiesSlice.reducer;
+
+function updateOpportunityInState(
+  state: OpportunitiesState,
+  action: PayloadAction<OpportunityInfo & Identifiable, string>
+) {
+  if (state.list.state === "success") {
+    const { indexOf } = findWithIndex(
+      state.list.value,
+      (o) => o.id === action.payload.id
+    );
+    if (indexOf === -1) throw new Error(OPPORTUNITY_NOT_FOUND);
+    const newList = [...state.list.value];
+    newList[indexOf] = action.payload;
+    state.list = RemoteData.success(newList);
+  }
+}
