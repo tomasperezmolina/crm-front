@@ -1,9 +1,11 @@
 import type { NextPage } from "next";
-import React from "react";
+import React, { useEffect } from "react";
 import { Box, Card, CardContent, Grid, Typography } from "@mui/material";
 import dynamic from "next/dynamic";
 import { programTypes } from "../model/opportunity";
 import { grey } from "@mui/material/colors";
+import { loadIndicators, selectIndicators } from "../state/indicators";
+import { useAppDispatch, useAppSelector } from "../state/dispatch";
 
 const ReactSpeedometer = dynamic(() => import("react-d3-speedometer"), {
   ssr: false,
@@ -87,89 +89,98 @@ function NumberIndicator({
 }
 
 const Home: NextPage = () => {
+  const indicators = useAppSelector(selectIndicators);
+  const dispatch = useAppDispatch();
+  useEffect(() => {
+    dispatch(loadIndicators());
+  }, [dispatch]);
   return (
-    <Grid
-      container
-      direction="column"
-      justifyContent="center"
-      sx={{
-        height: "inherit",
-        paddingX: 30,
-        bgcolor: grey[300],
-        overflowY: "scroll",
-      }}
-    >
-      <Grid
-        item
-        container
-        direction="row"
-        spacing={2}
-        columns={4}
-        justifyContent="center"
-      >
-        <Grid item>
-          <PercentageIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Conversión: Contactado - Vinculado"
-          />
-        </Grid>
-        <Grid item>
-          <PercentageIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Conversión: Primera Reunión - Desarrollo"
-          />
-        </Grid>
-        <Grid item>
-          <PercentageIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Conversión: Desarrollo - POC"
-          />
-        </Grid>
-        <Grid item>
-          <PercentageIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Contactos exitosos"
-          />
-        </Grid>
-        <Grid item>
-          <PercentageIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Aprobación de POC"
-          />
-        </Grid>
-        <Grid item>
-          <PercentageIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Negocios concretados"
-          />
-        </Grid>
-        <Grid item>
-          <NumberIndicator
-            value={Math.round(Math.random() * 100000 * 10) / 10}
-            title="Costo de adquisición"
-            prefix="$"
-            unit="Clientes / mes"
-            size="medium"
-          />
-        </Grid>
-        <Grid item>
-          <NumberIndicator
-            value={Math.round(Math.random() * 100 * 10) / 10}
-            title="Rendimiento SDR"
-            unit="Leads / mes"
-            size="big"
-          />
-        </Grid>
-        {programTypes.map((pt, idx) => (
-          <Grid item key={idx}>
-            <PercentageIndicator
-              value={Math.round(Math.random() * 100 * 10) / 10}
-              title={`Cantidad de ${pt} vendidos`}
-            />
+    <>
+      {indicators.state === "success" && (
+        <Grid
+          container
+          direction="column"
+          justifyContent="center"
+          sx={{
+            height: "inherit",
+            paddingX: 30,
+            bgcolor: grey[300],
+            overflowY: "scroll",
+          }}
+        >
+          <Grid
+            item
+            container
+            direction="row"
+            spacing={2}
+            columns={4}
+            justifyContent="center"
+          >
+            <Grid item>
+              <PercentageIndicator
+                value={indicators.value.firstMeetingConversion}
+                title="Conversión: Contactado - Vinculado"
+              />
+            </Grid>
+            <Grid item>
+              <PercentageIndicator
+                value={indicators.value.developmentConversion}
+                title="Conversión: Primera Reunión - Desarrollo"
+              />
+            </Grid>
+            <Grid item>
+              <PercentageIndicator
+                value={indicators.value.pocConversion}
+                title="Conversión: Desarrollo - POC"
+              />
+            </Grid>
+            {/* <Grid item>
+              <PercentageIndicator
+                value={indicators.value.clientConversion}
+                title="Contactos exitosos"
+              />
+            </Grid> */}
+            <Grid item>
+              <PercentageIndicator
+                value={indicators.value.negotiationConversion}
+                title="Aprobación de POC"
+              />
+            </Grid>
+            <Grid item>
+              <PercentageIndicator
+                value={indicators.value.doneConversion}
+                title="Negocios concretados"
+              />
+            </Grid>
+            {/* <Grid item>
+              <NumberIndicator
+                value={Math.round(Math.random() * 100000 * 10) / 10}
+                title="Costo de adquisición"
+                prefix="$"
+                unit="Clientes / mes"
+                size="medium"
+              />
+            </Grid> */}
+            <Grid item>
+              <NumberIndicator
+                value={indicators.value.performanceSDR}
+                title="Rendimiento SDR"
+                unit="Leads / mes"
+                size="big"
+              />
+            </Grid>
+            {programTypes.map((pt, idx) => (
+              <Grid item key={idx}>
+                <PercentageIndicator
+                  value={indicators.value.productsSold[pt]}
+                  title={`Cantidad de ${pt} vendidos`}
+                />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-    </Grid>
+        </Grid>
+      )}
+    </>
   );
 };
 

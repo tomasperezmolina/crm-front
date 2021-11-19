@@ -282,21 +282,27 @@ export const advanceOpportunityStage = createAsyncThunk<
     switch (payload.step) {
       case "Prospect":
         if (!payload.contact) throw new Error(PROSPECT_DATA_MISSING);
+        break;
       case "First meeting":
         if (!(payload as OpportunityInFirstMeeting).firstMeetingInfo)
           throw new Error(FIRST_MEETING_DATA_MISSING);
+        break;
       case "Development":
         if (!(payload as OpportunityInDevelopment).developmentInfo)
           throw new Error(DEVELOPMENT_DATA_MISSING);
+        break;
       case "POC development":
         if (!(payload as OpportunityInPOCDevelopment).pocDevelopmentInfo)
           throw new Error(POC_DEVELOPMENT_DATA_MISSING);
+        break;
       case "POC implementation":
         if (!(payload as OpportunityInPOCImplementation).pocImplementationInfo)
           throw new Error(POC_IMPLEMENTATION_DATA_MISSING);
+        break;
       case "Negotiation":
         if (!(payload as OpportunityInNegotiation).negotiationInfo)
           throw new Error(NEGOTIATION_DATA_MISSING);
+        break;
     }
     const session = thunkApi.getState().session.session!;
     const token = session.accessToken as string;

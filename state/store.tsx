@@ -10,6 +10,7 @@ import * as ReduxPersist from "redux-persist";
 import opportunitiesSlice from "./opportunities";
 import snackbarSlice from "./snackbar";
 import sessionSlice from "./session";
+import indicatorsSlice from "./indicators";
 
 const persistConfig = {
   key: "root",
@@ -20,6 +21,7 @@ const rootReducer = combineReducers({
   opportunities: opportunitiesSlice,
   snackbar: snackbarSlice,
   session: sessionSlice,
+  indicators: indicatorsSlice,
 });
 
 const reducer = persistReducer(persistConfig, rootReducer);
