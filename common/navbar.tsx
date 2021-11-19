@@ -32,7 +32,7 @@ export default function Navbar() {
   };
   const handleOpportunityClick = () => {
     handleClose();
-    router.push("/opportunity");
+    router.push("/");
   };
   const handleArchiveClick = () => {
     handleClose();

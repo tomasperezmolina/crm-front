@@ -25,7 +25,7 @@ function PercentageIndicator({ title, value }: IndicatorProps) {
           <Grid item>
             <Box sx={{ height: "160px", width: "300px" }}>
               <ReactSpeedometer
-                value={value}
+                value={Math.round(value * 10) / 10}
                 minValue={0}
                 maxValue={100}
                 currentValueText="${value}%"
