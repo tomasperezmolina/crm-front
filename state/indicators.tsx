@@ -48,10 +48,10 @@ export const loadIndicators = createAsyncThunk<
     performanceSDR: await authFetch("metrics/performanceSDR"),
     pocConversion: await authFetch("metrics/pocConversion") * 100,
     productsSold: {
-      Word: await authFetch("metrics/productsSold?type=WORD") * 100,
-      Excel: await authFetch("metrics/productsSold?type=EXCEL") * 100,
-      PowerPoint: await authFetch("metrics/productsSold?type=POWERPOINT") * 100,
-      Outlook: await authFetch("metrics/productsSold?type=OUTLOOK") * 100,
+      Word: await authFetch("metrics/productsSold?type=WORD"),
+      Excel: await authFetch("metrics/productsSold?type=EXCEL"),
+      PowerPoint: await authFetch("metrics/productsSold?type=POWERPOINT"),
+      Outlook: await authFetch("metrics/productsSold?type=OUTLOOK"),
     },
   };
 });

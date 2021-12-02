@@ -16,7 +16,17 @@ interface IndicatorProps {
   value: number;
 }
 
-function PercentageIndicator({ title, value }: IndicatorProps) {
+interface PercentageIndicatorProps extends IndicatorProps {
+  segmentStops: number[];
+  segmentColors: string[];
+}
+
+function PercentageIndicator({
+  title,
+  value,
+  segmentStops,
+  segmentColors,
+}: PercentageIndicatorProps) {
   return (
     <Card>
       <CardContent>
@@ -30,6 +40,9 @@ function PercentageIndicator({ title, value }: IndicatorProps) {
                 value={Math.round(value * 10) / 10}
                 minValue={0}
                 maxValue={100}
+                segments={segmentStops.length - 1}
+                customSegmentStops={segmentStops}
+                segmentColors={segmentColors}
                 currentValueText="${value}%"
               />
             </Box>
@@ -120,47 +133,42 @@ const Home: NextPage = () => {
               <PercentageIndicator
                 value={indicators.value.firstMeetingConversion}
                 title="Conversión: Contactado - Vinculado"
+                segmentStops={[0, 25, 50, 75, 100]}
+                segmentColors={["red", "yellow", "#99DD00", "#66CC00"]}
               />
             </Grid>
             <Grid item>
               <PercentageIndicator
                 value={indicators.value.developmentConversion}
                 title="Conversión: Primera Reunión - Desarrollo"
+                segmentStops={[0, 35, 70, 100]}
+                segmentColors={["red", "yellow", "#99DD00"]}
               />
             </Grid>
             <Grid item>
               <PercentageIndicator
                 value={indicators.value.pocConversion}
                 title="Conversión: Desarrollo - POC"
+                segmentStops={[0, 40, 80, 100]}
+                segmentColors={["red", "yellow", "#A3E000"]}
               />
             </Grid>
-            {/* <Grid item>
-              <PercentageIndicator
-                value={indicators.value.clientConversion}
-                title="Contactos exitosos"
-              />
-            </Grid> */}
             <Grid item>
               <PercentageIndicator
                 value={indicators.value.negotiationConversion}
                 title="Aprobación de POC"
+                segmentStops={[0, 40, 80, 100]}
+                segmentColors={["red", "yellow", "#A3E000"]}
               />
             </Grid>
             <Grid item>
               <PercentageIndicator
                 value={indicators.value.doneConversion}
                 title="Negocios concretados"
+                segmentStops={[0, 25, 50, 75, 100]}
+                segmentColors={["#FF0000", "#FF5500", "#FFAA00", "#FFFF00"]}
               />
             </Grid>
-            {/* <Grid item>
-              <NumberIndicator
-                value={Math.round(Math.random() * 100000 * 10) / 10}
-                title="Costo de adquisición"
-                prefix="$"
-                unit="Clientes / mes"
-                size="medium"
-              />
-            </Grid> */}
             <Grid item>
               <NumberIndicator
                 value={indicators.value.performanceSDR}
@@ -171,9 +179,11 @@ const Home: NextPage = () => {
             </Grid>
             {programTypes.map((pt, idx) => (
               <Grid item key={idx}>
-                <PercentageIndicator
+                <NumberIndicator
                   value={indicators.value.productsSold[pt]}
                   title={`Cantidad de ${pt} vendidos`}
+                  size="big"
+                  unit="Unidades"
                 />
               </Grid>
             ))}
